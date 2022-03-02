@@ -1,11 +1,15 @@
 from pickle import FALSE
 from random import randint
 from os.path import splitext
+from tkinter import XView
 from tqdm import tqdm
 import logging
 import os
 from DataPair import DataPair
 from MosaicImage import MosaicImage
+from datasets_reading.xView import read_data_from_xView
+
+
 class ImageMosaic:
     """
     Class-controller. Read images and annotations files into DataPair classes
