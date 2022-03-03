@@ -1,8 +1,17 @@
 import json
+from re import T
 import numpy as np
 from tqdm import tqdm
 from os.path import join, isfile
 from DataPair.DataPair import DataPair
+
+def _is_more_than_zero(box: list) -> bool:
+    out = True
+    for item in box:
+        if item < 0:
+            out = False
+    return out
+
 
 def read_xView(images_path: str, json_path: str) -> list:
     """
@@ -30,19 +39,22 @@ def read_xView(images_path: str, json_path: str) -> list:
             if image == "":
                 image = image_name
                 objects = []
-                objects.append(object_bb)
                 classes = []
-                classes.append(class_of_object)
+                if _is_more_than_zero(object_bb):
+                    objects.append(object_bb)
+                    classes.append(class_of_object)
             elif image == image_name:
-                objects.append(object_bb)
-                classes.append(class_of_object)
+                if _is_more_than_zero(object_bb):
+                    objects.append(object_bb)
+                    classes.append(class_of_object)
             elif image != image_name:
                 if (isfile(join(images_path, image))):
                     pair_list.append(DataPair(images_path, image, objects, classes))
                 image = image_name
                 objects = []
-                objects.append(object_bb)
                 classes = []
-                classes.append(class_of_object)
+                if _is_more_than_zero(object_bb):
+                    objects.append(object_bb)
+                    classes.append(class_of_object)
     pair_list.append(DataPair(images_path, image, objects, classes))
     return True, pair_list
