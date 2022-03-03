@@ -1,0 +1,158 @@
+INFO:root:--------------------------------------------------
+INFO:root:Parameters of class:
+INFO:root:Minimum object multiplier = 0.5
+INFO:root:Maximum object multiplier = 2
+INFO:root:Open images folder: /media/nikita/HDD/datasets/xView/train_images/train_images
+INFO:root:Open annotations folder: /media/nikita/HDD/datasets/xView/train_labels/xView_train.geojson
+INFO:root:Save images folder: /media/nikita/HDD/test/img/
+INFO:root:Save annotations folder: /media/nikita/HDD/test/txt/
+INFO:root:Loaded pairs count: 2
+INFO:root:Maximum images in mosaic 5
+INFO:root:Start number 0
+INFO:root:End number 500
+INFO:root:--------------------------------------------------
+INFO:root:Will be creating 500 mosaics
+INFO:root:From start number 0 to end number 500
+INFO:root:Mosaic creation started...
+INFO:root:--------------------------------------------------
+INFO:root:Parameters of class:
+INFO:root:Minimum object multiplier = 0.5
+INFO:root:Maximum object multiplier = 2
+INFO:root:Open images folder: /media/nikita/HDD/datasets/xView/train_images/train_images
+INFO:root:Open annotations folder: /media/nikita/HDD/datasets/xView/train_labels/xView_train.geojson
+INFO:root:Save images folder: /media/nikita/HDD/test/img/
+INFO:root:Save annotations folder: /media/nikita/HDD/test/txt/
+INFO:root:Loaded pairs count: 2
+INFO:root:Maximum images in mosaic 5
+INFO:root:Start number 0
+INFO:root:End number 500
+INFO:root:--------------------------------------------------
+INFO:root:Will be creating 500 mosaics
+INFO:root:From start number 0 to end number 500
+INFO:root:Mosaic creation started...
+INFO:root:--------------------------------------------------
+INFO:root:Parameters of class:
+INFO:root:Minimum object multiplier = 0.5
+INFO:root:Maximum object multiplier = 2
+INFO:root:Open images folder: /media/nikita/HDD/datasets/xView/train_images/train_images
+INFO:root:Open annotations folder: /media/nikita/HDD/datasets/xView/train_labels/xView_train.geojson
+INFO:root:Save images folder: /media/nikita/HDD/test/img/
+INFO:root:Save annotations folder: /media/nikita/HDD/test/txt/
+INFO:root:Loaded pairs count: 2
+INFO:root:Maximum images in mosaic 5
+INFO:root:Start number 0
+INFO:root:End number 500
+INFO:root:--------------------------------------------------
+INFO:root:Will be creating 500 mosaics
+INFO:root:From start number 0 to end number 500
+INFO:root:Mosaic creation started...
+INFO:root:--------------------------------------------------
+INFO:root:Parameters of class:
+INFO:root:Minimum object multiplier = 0.5
+INFO:root:Maximum object multiplier = 2
+INFO:root:Open images folder: /media/nikita/HDD/datasets/xView/train_images/train_images
+INFO:root:Open annotations folder: /media/nikita/HDD/datasets/xView/train_labels/xView_train.geojson
+INFO:root:Save images folder: /media/nikita/HDD/test/img/
+INFO:root:Save annotations folder: /media/nikita/HDD/test/txt/
+INFO:root:Loaded pairs count: 846
+INFO:root:Maximum images in mosaic 5
+INFO:root:Start number 0
+INFO:root:End number 500
+INFO:root:--------------------------------------------------
+INFO:root:Will be creating 500 mosaics
+INFO:root:From start number 0 to end number 500
+INFO:root:Mosaic creation started...
+INFO:root:Chased 5 images for mosaic. Images: [211, 787, 448, 489, 442]
+INFO:root:People count on image number 0 - 211 = 2404
+INFO:root:People count on image number 1 - 787 = 2404
+INFO:root:People count on image number 2 - 448 = 2404
+INFO:root:People count on image number 3 - 489 = 2404
+INFO:root:People count on image number 4 - 442 = 2404
+INFO:root:--------------------------------------------------
+INFO:root:Parameters of class:
+INFO:root:Minimum object multiplier = 0.5
+INFO:root:Maximum object multiplier = 2
+INFO:root:Open images folder: /media/nikita/HDD/datasets/xView/train_images/train_images
+INFO:root:Open annotations folder: /media/nikita/HDD/datasets/xView/train_labels/xView_train.geojson
+INFO:root:Save images folder: /media/nikita/HDD/test/img/
+INFO:root:Save annotations folder: /media/nikita/HDD/test/txt/
+INFO:root:Loaded pairs count: 846
+INFO:root:Maximum images in mosaic 5
+INFO:root:Start number 0
+INFO:root:End number 500
+INFO:root:--------------------------------------------------
+INFO:root:Will be creating 500 mosaics
+INFO:root:From start number 0 to end number 500
+INFO:root:Mosaic creation started...
+INFO:root:Chased 5 images for mosaic. Images: [786, 595, 453, 437, 520]
+INFO:root:People count on image number 0 - 786 = 187
+INFO:root:People count on image number 1 - 595 = 187
+INFO:root:People count on image number 2 - 453 = 187
+INFO:root:People count on image number 3 - 437 = 187
+INFO:root:People count on image number 4 - 520 = 187
+INFO:root:--------------------------------------------------
+INFO:root:Parameters of class:
+INFO:root:Minimum object multiplier = 0.5
+INFO:root:Maximum object multiplier = 2
+INFO:root:Open images folder: /media/nikita/HDD/datasets/xView/train_images/train_images
+INFO:root:Open annotations folder: /media/nikita/HDD/datasets/xView/train_labels/xView_train.geojson
+INFO:root:Save images folder: /media/nikita/HDD/test/img/
+INFO:root:Save annotations folder: /media/nikita/HDD/test/txt/
+INFO:root:Loaded pairs count: 846
+INFO:root:Maximum images in mosaic 5
+INFO:root:Start number 0
+INFO:root:End number 500
+INFO:root:--------------------------------------------------
+INFO:root:Will be creating 500 mosaics
+INFO:root:From start number 0 to end number 500
+INFO:root:Mosaic creation started...
+INFO:root:Chased 4 images for mosaic. Images: [226, 571, 362, 699]
+INFO:root:People count on image number 0 - 226 = 2
+INFO:root:People count on image number 1 - 571 = 2
+INFO:root:People count on image number 2 - 362 = 2
+INFO:root:People count on image number 3 - 699 = 2
+INFO:root:--------------------------------------------------
+INFO:root:Parameters of class:
+INFO:root:Minimum object multiplier = 0.5
+INFO:root:Maximum object multiplier = 2
+INFO:root:Open images folder: /media/nikita/HDD/datasets/xView/train_images/train_images
+INFO:root:Open annotations folder: /media/nikita/HDD/datasets/xView/train_labels/xView_train.geojson
+INFO:root:Save images folder: /media/nikita/HDD/test/img/
+INFO:root:Save annotations folder: /media/nikita/HDD/test/txt/
+INFO:root:Loaded pairs count: 846
+INFO:root:Maximum images in mosaic 5
+INFO:root:Start number 0
+INFO:root:End number 500
+INFO:root:--------------------------------------------------
+INFO:root:Will be creating 500 mosaics
+INFO:root:From start number 0 to end number 500
+INFO:root:Mosaic creation started...
+INFO:root:Chased 4 images for mosaic. Images: [175, 496, 404, 730]
+INFO:root:People count on image number 0 - 175 = 88
+INFO:root:People count on image number 1 - 496 = 88
+INFO:root:People count on image number 2 - 404 = 88
+INFO:root:People count on image number 3 - 730 = 88
+INFO:root:Mosaic main image is ready
+INFO:root:--------------------------------------------------
+INFO:root:Parameters of class:
+INFO:root:Minimum object multiplier = 0.5
+INFO:root:Maximum object multiplier = 2
+INFO:root:Open images folder: /media/nikita/HDD/datasets/xView/train_images/train_images
+INFO:root:Open annotations folder: /media/nikita/HDD/datasets/xView/train_labels/xView_train.geojson
+INFO:root:Save images folder: /media/nikita/HDD/test/img/
+INFO:root:Save annotations folder: /media/nikita/HDD/test/txt/
+INFO:root:Loaded pairs count: 846
+INFO:root:Maximum images in mosaic 5
+INFO:root:Start number 0
+INFO:root:End number 500
+INFO:root:--------------------------------------------------
+INFO:root:Will be creating 500 mosaics
+INFO:root:From start number 0 to end number 500
+INFO:root:Mosaic creation started...
+INFO:root:Chased 2 images for mosaic. Images: [181, 84]
+INFO:root:People count on image number 0 - 181 = 353
+INFO:root:People count on image number 1 - 84 = 353
+INFO:root:Mosaic main image is ready
+INFO:root:Pieces in mosaic number: 2
+INFO:root:Pieces in mosaic: [[24, 343, 92, 396], [93, 89, 2554, 342]]
+INFO:root:Image in piece number 0 contains following objects: [[3, 10, 42, 38]]

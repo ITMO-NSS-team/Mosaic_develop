@@ -3,9 +3,9 @@ from random import randint
 from os.path import join
 from typing import Tuple
 from PIL import Image
-from tqdm import tqdm
 import numpy as np
 from utils.rectangles_checks import point_intersection, rectangles_intersection
+from utils.convertors import from_rec_to_yolo
 
 class DataPair:
     """
@@ -43,6 +43,28 @@ class DataPair:
         image = Image.open(join(self.image_folder, self.image_name))
         self.img_width, self.img_height = image.size
         self.create_obj_list()
+    
+
+    def __init__(self, image_folder: str,
+                 image_name: str, objects: list, classes: list) -> None:
+        """
+        Constructor
+        :param image_folder - image folder
+        :param text_folder - annotation folder
+        :param image_name - name of image file
+        :param txt_name - annotation file folder
+        """
+        self.image_folder = image_folder
+        self.image_name = image_name
+        self.objects_classes = classes.copy()
+        self.rec_objects_list = objects.copy()
+        self.object_number = len(self.rec_objects_list)
+        image = Image.open(join(self.image_folder, self.image_name))
+        self.img_width, self.img_height = image.size
+        self.yolo_objects_list = []
+        for line in self.rec_objects_list:
+            self.yolo_objects_list.append(from_rec_to_yolo(line, self.img_width, self.img_height))
+            
 
     def create_obj_list(self) -> None:
         """

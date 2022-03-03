@@ -1,0 +1,3 @@
+
+YOLO = "YOLOv4"
+XVIEW = "XVIEW"
