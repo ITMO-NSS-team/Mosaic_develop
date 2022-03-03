@@ -4,7 +4,8 @@ from os.path import join
 from PIL import Image
 import logging
 from utils.rectangles_checks import point_intersection, rectangles_intersection
-
+from utils.convertors import from_rec_to_yolo
+from Constants.mosaic_settings import MAX_MULTIPLIER, MIN_MULTIPLIER
 
 class MosaicContainer:
     """
@@ -25,9 +26,9 @@ class MosaicContainer:
     filename: str
     pair_classes: list
     mosaic_classes: list
-
-    min_human_multiplier: int
-    max_human_multiplier: int
+    data_pairs_number: int
+    min_object_multiplier: int
+    max_object_multiplier: int
 
 
 
@@ -44,8 +45,9 @@ class MosaicContainer:
         :param filename - name of image and annotation file
 
         """
-        self.min_human_multiplier = 1
-        self.max_human_multiplier = 2
+        self.data_pairs_number = 0
+        self.min_object_multiplier = MIN_MULTIPLIER
+        self.max_object_multiplier = MAX_MULTIPLIER
         self.pair_classes = []
         self.mosaic_classes = []
         self.pieces_number = 0
@@ -66,7 +68,7 @@ class MosaicContainer:
 
         if self.people_number == 1:
             self.mosaic_classes.append(pairs[0].objects_classes[0])
-            self.yolo_objects_list.append(self.from_rec_to_cross(self.rec_objects_list[0]))
+            self.yolo_objects_list.append(from_rec_to_yolo(self.rec_objects_list[0], self.img_width, self.img_height))
             self.get_small_area(self.rec_objects_list[0], 7, 7)
         else:
             self.people_number = 0
@@ -88,7 +90,7 @@ class MosaicContainer:
             logging.info(f"Mosaic pair number {self.filename} was wrote successful!")
             return True
         else:
-            logging.info(f"On mosaic pair number {self.filename} no people found!")
+            logging.info(f"On mosaic pair number {self.filename} no people found! Or no mosaic was made.")
         return False
        
 
@@ -100,31 +102,27 @@ class MosaicContainer:
         :param delta_w - width of area
         :param delta_h - height of area
         """
-        if obj_coordinates[0] - delta_w >= 0:
-            out_x1 = obj_coordinates[0] - randint(0, delta_w)
-        else:
-            out_x1 = obj_coordinates[0] - randint(0, obj_coordinates[0])
-
-        if obj_coordinates[2] + delta_w <= self.img_width - 1:
-            out_x2 = obj_coordinates[2] + randint(0, delta_w)
-        else:
-            if self.img_width - obj_coordinates[2] <= 0:
-                out_x2 = obj_coordinates[2]
+        def first_coord_change(coord: int, delta: int) -> int:
+            if obj_coordinates[0] - delta_w >= 0:
+                out_coord = coord - randint(0, delta)
             else:
-                out_x2 = obj_coordinates[2] + randint(0, self.img_width - obj_coordinates[2])
+                out_coord = coord - randint(0, coord)
+            return out_coord
 
-        if obj_coordinates[1] - delta_h >= 0:
-            out_y1 = obj_coordinates[1] - randint(0, delta_h)
-        else:
-            out_y1 = obj_coordinates[1] - randint(0, obj_coordinates[1])
-
-        if obj_coordinates[3] + delta_h <= self.img_height - 1:
-            out_y2 = obj_coordinates[3] + randint(0, delta_h)
-        else:
-            if self.img_height - obj_coordinates[3] <= 0:
-                out_y2 = obj_coordinates[3]
+        def second_doord_change(coord: int, delta: int, size: int) -> int:
+            if coord + delta <= size - 1:
+                out_coord = coord + randint(0, delta)
             else:
-                out_y2 = obj_coordinates[3] + randint(0, self.img_height - obj_coordinates[3])
+                if size - coord <= 0:
+                    out_coord = coord
+                else:
+                    out_coord = coord + randint(0, size - coord)
+            return out_coord
+
+        out_x1 = first_coord_change(obj_coordinates[0], delta_w)
+        out_y1 = first_coord_change(obj_coordinates[1], delta_h)
+        out_x2 = second_doord_change(obj_coordinates[2], delta_w, self.img_width)
+        out_y2 = second_doord_change(obj_coordinates[3], delta_h, self.img_height)
         self.rec_rec_list.append([out_x1, out_y1, out_x2, out_y2])
         self.pieces_number += 1
 
@@ -134,35 +132,18 @@ class MosaicContainer:
 
         """
         if self.people_number != 0:
-            self.main_image.save(join(self.image_folder, self.filename + ".jpg"))
-            class_number = 0
-            with open(join(self.txt_folder, self.filename + ".txt"), 'w') as f:
-                for item in self.yolo_objects_list:
-                    f.write(f"{self.mosaic_classes[class_number]} ")
-                    class_number += 1
-                    for numb in item:
-                        f.write(f"{numb} ")
-                    f.write("\n")
-            return True
+            if self.data_pairs_number != 0:
+                self.main_image.save(join(self.image_folder, self.filename + ".jpg"))
+                class_number = 0
+                with open(join(self.txt_folder, self.filename + ".txt"), 'w') as f:
+                    for item in self.yolo_objects_list:
+                        f.write(f"{self.mosaic_classes[class_number]} ")
+                        class_number += 1
+                        for numb in item:
+                            f.write(f"{numb} ")
+                        f.write("\n")
+                return True
         return False
-
-    def from_rec_to_cross(self, box) -> list:
-        """
-        Turn rectangular coordinates in YOLO format
-
-        :return list - YOLO coordinates
-        """
-        dw = 1. / self.img_width
-        dh = 1. / self.img_height
-        x = (box[0] + box[2]) / 2.0
-        y = (box[1] + box[3]) / 2.0
-        w = box[2] - box[0]
-        h = box[3] - box[1]
-        x = x * dw
-        w = w * dw
-        y = y * dh
-        h = h * dh
-        return [x, y, w, h]
 
     def get_part_main_image(self) -> None:
         """
@@ -296,11 +277,12 @@ class MosaicContainer:
             height = self.rec_rec_list[i][3] - self.rec_rec_list[i][1]
             for n in range(20):
                 img, piece_of_objects_list, _, classes = self.pair_list[i].get_image_piece_with_object(width, height,
-                                                                                                       self.min_human_multiplier,
-                                                                                                       self.max_human_multiplier)
+                                                                                                       self.min_object_multiplier,
+                                                                                                       self.max_object_multiplier)
                 if img:    
                     break
             if img:
+                self.data_pairs_number += 1
                 logging.info(f"Image in piece number {i} contains following objects: {piece_of_objects_list}")
                 class_numb = 0
                 for line in piece_of_objects_list:
@@ -309,5 +291,5 @@ class MosaicContainer:
                     new_line = [line[0] + self.rec_rec_list[i][0], line[1] + self.rec_rec_list[i][1],
                                 line[2] + self.rec_rec_list[i][0], line[3] + self.rec_rec_list[i][1]]
                     self.rec_objects_list.append(new_line)
-                    self.yolo_objects_list.append(self.from_rec_to_cross(new_line))
+                    self.yolo_objects_list.append(from_rec_to_yolo(new_line, self.img_width, self.img_height))
                 self.main_image.paste(img, (self.rec_rec_list[i][0], self.rec_rec_list[i][1]))

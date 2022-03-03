@@ -9,7 +9,7 @@ out_img_folder = "/media/nikita/HDD/test/img/"
 out_txt_folder = "/media/nikita/HDD/test/txt/"
 Img_mosaic = MosaicController(img_folder, txt_folder, out_img_folder, out_txt_folder, XVIEW)
 Img_mosaic.set_start_count(0)
-Img_mosaic.set_end_count(500)
+Img_mosaic.set_end_count(50)
 Img_mosaic.make_mosaic()
 end = time.time()
 print(end - start)

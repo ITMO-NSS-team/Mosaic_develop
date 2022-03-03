@@ -7,6 +7,7 @@ from MosaicContainer.MosaicContainer import MosaicContainer
 from Mosaic.datasets_reading.xView import read_xView
 from Mosaic.datasets_reading.yolov4 import read_yolov4
 from Constants.datatype_constants import YOLO, XVIEW
+from Constants.mosaic_settings import MAX_MULTIPLIER, MIN_MULTIPLIER
 
 
 class MosaicController:
@@ -44,8 +45,8 @@ class MosaicController:
         """
         logging.basicConfig(filename="mosaic_augment.log", level=logging.INFO)
         self.input_image_folder = input_img_folder
-        self.min_object_multiplier = 0.5
-        self.max_object_multiplier = 2
+        self.min_object_multiplier = MIN_MULTIPLIER
+        self.max_object_multiplier = MAX_MULTIPLIER
         self.start_number = 0
         self.end_number = 1
         self.output_image_folder = output_img_folder
@@ -171,8 +172,8 @@ class MosaicController:
                         for i in range(len(rand_pair_numbers)):
                             rand_pair_list.append(self.pair_list[rand_pair_numbers[i]])
                         mosaic = MosaicContainer(rand_pair_list, self.output_image_folder, self.output_txt_folder, str(counter))
-                        mosaic.min_human_multiplier = self.min_object_multiplier
-                        mosaic.max_human_multiplier = self.max_object_multiplier
+                        mosaic.min_object_multiplier = self.min_object_multiplier
+                        mosaic.max_object_multiplier = self.max_object_multiplier
                         mosaic.img_ext = self.img_ext
                         mosaic.txt_ext = self.txt_ext
                         if mosaic.make_mosaic():

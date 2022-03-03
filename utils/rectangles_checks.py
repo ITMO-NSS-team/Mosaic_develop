@@ -1,3 +1,7 @@
+
+
+
+
 def line_intersect(first_line: list, second_line: list) -> bool:
     """
     This method check intersection of two lines
@@ -34,9 +38,17 @@ def point_intersection(rect: list, x: int, y: int) -> bool:
     """
     return rect[0] <= x <= rect[2] and rect[1] <= y <= rect[3]
 
-
-
 def rectangles_intersection(rectangle_1: list, rectangle_2: list) -> bool:
+    intersect = False
+    for i in range(0, 3, 2):
+        if point_intersection(rectangle_1, rectangle_2[i], rectangle_2[i+1]):
+            intersect = True
+    for i in range(0, 3, 2):
+        if point_intersection(rectangle_2, rectangle_1[i], rectangle_1[i+1]):
+            intersect = True
+    return intersect
+    
+def rectangles_intersection_old(rectangle_1: list, rectangle_2: list) -> bool:
     """
     This method check intersection of two rectangles
     :param rectangle_1 - first rectangle
