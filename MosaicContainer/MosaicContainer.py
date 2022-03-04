@@ -277,7 +277,7 @@ class MosaicContainer:
         Insert random parts with objects from pair images into empty parts of Main Image
 
         """
-        for i in range(0, len(self.rec_rec_list)):
+        for i in range(self.objects_number, len(self.rec_rec_list)):
             width = self.rec_rec_list[i][2] - self.rec_rec_list[i][0]
             height = self.rec_rec_list[i][3] - self.rec_rec_list[i][1]
             for n in range(20):
