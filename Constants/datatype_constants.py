@@ -1,3 +1,4 @@
 
 YOLO = "YOLOv4"
 XVIEW = "XVIEW"
+METU = "METU"

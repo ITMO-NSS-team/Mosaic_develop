@@ -5,14 +5,14 @@ from PIL import Image
 import logging
 from utils.rectangles_checks import point_intersection, rectangles_intersection
 from utils.convertors import from_rec_to_yolo
-from Constants.mosaic_settings import MAX_MULTIPLIER, MIN_MULTIPLIER
+from Constants.mosaic_settings import DELTA_Y, MAX_MULTIPLIER, MIN_MULTIPLIER, DELTA_X, DELTA_Y
 
 class MosaicContainer:
     """
     Class-container for mosaic pair(image-annotation), that contains all information about
     image and txt-annotation of mosaic.
     """
-    people_number: int
+    objects_number: int
     pieces_number: int
     img_width: int
     img_height: int
@@ -60,18 +60,23 @@ class MosaicContainer:
         self.main_image = pairs[0].get_image()
         self.image_folder = arg_img_folder
         self.txt_folder = arg_txt_folder
-        self.people_number = pairs[0].object_number
+        self.objects_number = pairs[0].object_number
         self.filename = filename
         for i in range(0, len(self.pair_list) - 1):
             if self.pair_list[i].object_number != len(self.pair_list[i].rec_objects_list):
                 self.pair_list[i].object_number = len(self.pair_list[i].rec_objects_list)
 
-        if self.people_number == 1:
+        if self.objects_number == 1:
             self.mosaic_classes.append(pairs[0].objects_classes[0])
             self.yolo_objects_list.append(from_rec_to_yolo(self.rec_objects_list[0], self.img_width, self.img_height))
-            self.get_small_area(self.rec_objects_list[0], 7, 7)
+            self.get_small_area(self.rec_objects_list[0], DELTA_X, DELTA_Y)
+        elif self.objects_number > 1:
+            for i in range(len(pairs[0].objects_classes)):
+                self.mosaic_classes.append(pairs[0].objects_classes[i])
+                self.yolo_objects_list.append(from_rec_to_yolo(self.rec_objects_list[i], self.img_width, self.img_height))
+                self.get_small_area(self.rec_objects_list[i], DELTA_X, DELTA_Y)
         else:
-            self.people_number = 0
+            self.objects_number = 0
             self.pieces_number = 0
         logging.info('Mosaic main image is ready')
 
@@ -131,7 +136,7 @@ class MosaicContainer:
         Write mosaic pair in files
 
         """
-        if self.people_number != 0:
+        if self.objects_number != 0:
             if self.data_pairs_number != 0:
                 self.main_image.save(join(self.image_folder, self.filename + ".jpg"))
                 class_number = 0
@@ -151,7 +156,7 @@ class MosaicContainer:
 
         """
         areas = []
-        if self.pieces_number == 0:
+        if len(self.rec_rec_list) == 0:
             for n in range(15):
                 out_x1 = randint(0, self.img_width - 1)
                 out_y1 = randint(0, self.img_height - 1)
@@ -185,7 +190,7 @@ class MosaicContainer:
                     y = randint(1, self.img_height - 1)
                     stop = True
                     for line in self.rec_rec_list:
-                        if point_intersection([line[0], line[1], line[2], line[3]], x, y):
+                        if point_intersection(line, x, y):
                             stop = False
 
                 out_x1 = x - randint(0, x)
@@ -197,7 +202,7 @@ class MosaicContainer:
                 for i in range(len(self.rec_rec_list)):
                     for line in self.rec_rec_list:
                         if rectangles_intersection([out_x1, out_y1, out_x2, out_y2],
-                                                   [line[0], line[1], line[2], line[3]]):
+                                                   line):
                             if out_x1 < line[0] and out_y1 > line[1]:
                                 if line[0] - 1 >= 0:
                                     out_x2 = line[0] - 1
@@ -245,7 +250,7 @@ class MosaicContainer:
                                     out_y1 = line[3]
 
                             if rectangles_intersection([out_x1, out_y1, out_x2, out_y2],
-                                                       [line[0], line[1], line[2], line[3]]):
+                                                       line):
                                 is_good_area = False
                                 break
                             else:
