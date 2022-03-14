@@ -20,7 +20,8 @@ Above it, generator supports two specific datasets:
 
 
 ### Examples
-***
+
+![Example](https://i.imgur.com/4bS60Dv.png)
 
 ### Usage
 Usage
