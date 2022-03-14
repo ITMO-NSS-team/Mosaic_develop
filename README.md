@@ -6,8 +6,8 @@ This project is lossles mosaic generator.
 
 Now this generator supports datasets in bot variations pf YOLO format:
 
->> <object-class> <x> <y> <width> <height>
->> <object-class> <x1> <y1> <x2> <y2>
+  <object-class> <x> <y> <width> <height>
+  <object-class> <x1> <y1> <x2> <y2>
   
 In plans - add support for COCO formatted datasets.
 
