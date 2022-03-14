@@ -30,10 +30,6 @@ class MosaicContainer:
     min_object_multiplier: int
     max_object_multiplier: int
 
-
-
-
-
     def __init__(self, pairs: list, arg_img_folder: str, arg_txt_folder: str, filename: str):
         """
         Constructor - takes in Data_pair type objects list 
@@ -279,7 +275,7 @@ class MosaicContainer:
         """
         for i in range(self.objects_number, len(self.rec_rec_list)):
             if len(self.rec_rec_list) > i:
-                rectangle = self.rec_rec_list.pop(i)
+                rectangle = self.rec_rec_list[i]
                 width = rectangle[2] - rectangle[0]
                 height = rectangle[3] - rectangle[1]
                 for n in range(20):
