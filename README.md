@@ -11,7 +11,10 @@ Now this generator supports datasets in bot variations pf YOLO format:
   
 In plans - add support for COCO formatted datasets.
 
-Above it, generator supports two specific datasets: xView (https://challenge.xviewdataset.org/login) and METU-ALET (https://github.com/metu-kovan/METU-ALET).
+Above it, generator supports two specific datasets: 
+
+      xView (https://challenge.xviewdataset.org/login)
+      METU-ALET (https://github.com/metu-kovan/METU-ALET).
   
 
 
