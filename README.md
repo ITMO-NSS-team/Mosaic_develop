@@ -17,11 +17,12 @@ Above it, generator supports two specific datasets:
       METU-ALET (https://github.com/metu-kovan/METU-ALET).
   
 
-
-
 ### Examples
 
 ![Example](https://i.imgur.com/4bS60Dv.png)
+![Example](https://i.imgur.com/2Bbab22.png)
+![Example](https://i.imgur.com/CgKTtb8.png)
+
 
 ### Usage
 Usage
