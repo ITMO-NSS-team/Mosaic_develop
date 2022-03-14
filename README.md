@@ -1,1 +1,4 @@
-# Mosaic_develop
+# Mosaic generator
+## {WORK IN PROGRESS}
+
+## Examples
