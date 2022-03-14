@@ -3,60 +3,60 @@ import numpy as np
 from tqdm import tqdm
 from os.path import join, isfile
 import sys
-sys.path.append ("/home/nikita/Desktop/Mosaic_develop")
+sys.path.append ("/home/balin/Desktop/Mosaic_develop")
 from DataPair.DataPair import DataPair
 from PIL import Image
 
 def _is_more_than_zero(box: list) -> bool:
-        """
-        Method-checker for boxes. Checks if all elements in boxes are >0
-        :param box - [x1, y1, x2, y2]
-        :return True if all elements are > 0 and False otherwise
-        """
-        out = True
-        for item in box:
-            if item <= 0:
-                out = False
-        return out
+    """
+    Method-checker for boxes. Checks if all elements in boxes are >0
+    :param box - [x1, y1, x2, y2]
+    :return True if all elements are > 0 and False otherwise
+    """
+    out = True
+    for item in box:
+        if item <= 0:
+            out = False
+    return out
 
 def _search_filename_by_imageID(data: dict, imageID: int) -> str:
-        """
-        Method-searcher for filenames in json annotation by imageID
-        :param data - data read from json
-        :param imageID - ide of image
+    """
+    Method-searcher for filenames in json annotation by imageID
+    :param data - data read from json
+    :param imageID - ide of image
 
-        :return filename
-        """
-        for i in range(len(data['images'])):
-            if data['images'][i]['id'] == imageID:
-                return data['images'][i]['file_name']
+    :return filename
+    """
+    for i in range(len(data['images'])):
+        if data['images'][i]['id'] == imageID:
+            return data['images'][i]['file_name']
 
 
 def _is_not_degenerate(box: list) -> bool:
-        """
-        Method-checker for boxes. Checks if all elements in boxes are x1 < x2 and y1 < y2(not degenerate)
-        :param box - [x1, y1, x2, y2]
-        :return True if box isn't degenerate and False otherwise
-        """
-        if box[0] >= box[2] or box[1] >= box[3]:
-            return False
-        return True
+    """
+    Method-checker for boxes. Checks if all elements in boxes are x1 < x2 and y1 < y2(not degenerate)
+    :param box - [x1, y1, x2, y2]
+    :return True if box isn't degenerate and False otherwise
+    """
+    if box[0] >= box[2] or box[1] >= box[3]:
+        return False
+    return True
 
 def _is_in_bounds(box_list, width, height) -> bool:
-        """
-        Method-checker for boxes. Checks if all elements in boxes are x1 >= 0, y1 >= 0, x1 < width and y2 < height 
-        and that list of boxes isn't empty
-        :param box_list - [[x1, y1, x2, y2], [x1, y1, x2, y2],...]
-        :param width, height - params of image
-        :return True all of boxes are om bounds and list of boxes isn't empty, False otherwise
-        """
-        output = True
-        for box in box_list:
-            if not (box[0] >= 0 and box[1] >= 0 and box[2] < width and box[3] < height):
-                output = False
-        if len(box_list) == 0:
+    """
+    Method-checker for boxes. Checks if all elements in boxes are x1 >= 0, y1 >= 0, x1 < width and y2 < height 
+    and that list of boxes isn't empty
+    :param box_list - [[x1, y1, x2, y2], [x1, y1, x2, y2],...]
+    :param width, height - params of image
+    :return True all of boxes are om bounds and list of boxes isn't empty, False otherwise
+    """
+    output = True
+    for box in box_list:
+        if not (box[0] >= 0 and box[1] >= 0 and box[2] < width and box[3] < height):
             output = False
-        return output
+    if len(box_list) == 0:
+        output = False
+    return output
 
 def read_METU(images_path: str, json_path: str) -> list:
     """

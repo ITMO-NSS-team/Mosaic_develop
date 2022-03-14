@@ -5,7 +5,7 @@ from typing import Tuple
 from PIL import Image
 import numpy as np
 from utils.rectangles_checks import point_intersection, rectangles_intersection
-from utils.convertors import from_rec_to_yolo
+from utils.convertors import from_rec_to_yolo, from_yolo_to_rec
 
 class DataPair:
     """
@@ -23,28 +23,7 @@ class DataPair:
     img_height: int
     object_number: int
     objects_classes: list
-
-    def __init__(self, image_folder: str, text_folder: str,
-                 image_name: str, txt_name: str) -> None:
-        """
-        Constructor
-        :param image_folder - image folder
-        :param text_folder - annotation folder
-        :param image_name - name of image file
-        :param txt_name - annotation file folder
-        """
-        self.image_folder = image_folder
-        self.text_folder = text_folder
-        self.image_name = image_name
-        self.txt_name = txt_name
-        self.objects_classes = []
-        self.yolo_objects_list = []
-        self.rec_objects_list = []
-        image = Image.open(join(self.image_folder, self.image_name))
-        self.img_width, self.img_height = image.size
-        self.create_obj_list()
     
-
     def __init__(self, image_folder: str,
                  image_name: str, objects: list, classes: list) -> None:
         """
@@ -56,14 +35,23 @@ class DataPair:
         """
         self.image_folder = image_folder
         self.image_name = image_name
-        self.objects_classes = classes.copy()
-        self.rec_objects_list = objects.copy()
-        self.object_number = len(self.rec_objects_list)
         image = Image.open(join(self.image_folder, self.image_name))
         self.img_width, self.img_height = image.size
-        self.yolo_objects_list = []
-        for line in self.rec_objects_list:
-            self.yolo_objects_list.append(from_rec_to_yolo(line, self.img_width, self.img_height))
+        self.objects_classes = classes.copy()
+        if type(objects[0][0]) is int:
+            self.rec_objects_list = objects.copy()
+            self.yolo_objects_list = []
+            for line in self.rec_objects_list:
+                self.yolo_objects_list.append(from_rec_to_yolo(line, self.img_width, self.img_height))
+        elif type(objects[0][0]) is np.float64:
+            self.rec_objects_list = []
+            self.yolo_objects_list = objects.copy()
+            for line in self.yolo_objects_list:
+                self.rec_objects_list.append(from_yolo_to_rec(line, self.img_width, self.img_height))
+        self.object_number = len(self.rec_objects_list)
+
+        
+        
             
 
     def create_obj_list(self) -> None:

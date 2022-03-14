@@ -1,10 +1,29 @@
 from tqdm import tqdm
 import os
 from os.path import splitext
+from os.path import join
+import numpy as np
+
 from DataPair.DataPair import DataPair
 
 img_ext = [".jpg", ".png", ".JPG", ".PNG"]
 txt_ext = [".txt", ".TXT"]
+
+def create_obj_list(annotation_folder: str, annotation_filde: str) -> list:
+        """
+        This method reads annotation file and turns this data to list of lists of float
+        """
+        yolo_objects_list = []
+        objects_classes = []
+        with open(join(annotation_folder, annotation_filde)) as f:
+            lines = f.readlines()
+            for line in lines:
+                line1 = line.strip('\n').split(' ')
+                float_line = list(np.float_(line1))
+                objects_classes.append(int(float_line[0]))
+                float_line.pop(0)
+                yolo_objects_list.append(float_line)
+        return yolo_objects_list, objects_classes
 
 def read_yolov4(images_path: str, annotations_path: str) -> list:
     """
@@ -33,8 +52,9 @@ def read_yolov4(images_path: str, annotations_path: str) -> list:
             print(f"All images have a respective pair of text files!")
             print(f"Pair count is {pair_count}")
             for i in tqdm(range(pair_count), colour="blue"):
-                pair_list.append(DataPair(images_path, annotations_path, image_list[i],
-                                                txt_list[i]))
+                objects, classes = create_obj_list(annotations_path, txt_list[i])
+                pair_list.append(DataPair(images_path, image_list[i],
+                                                objects, classes))
         else:
             print(f"ERROR! Not all images have a respective pair of text files!")
             return False, pair_list

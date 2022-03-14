@@ -278,23 +278,26 @@ class MosaicContainer:
 
         """
         for i in range(self.objects_number, len(self.rec_rec_list)):
-            width = self.rec_rec_list[i][2] - self.rec_rec_list[i][0]
-            height = self.rec_rec_list[i][3] - self.rec_rec_list[i][1]
-            for n in range(20):
-                img, piece_of_objects_list, _, classes = self.pair_list[i].get_image_piece_with_object(width, height,
-                                                                                                       self.min_object_multiplier,
-                                                                                                       self.max_object_multiplier)
-                if img:    
-                    break
-            if img:
-                self.data_pairs_number += 1
-                logging.info(f"Image in piece number {i} contains following objects: {piece_of_objects_list}")
-                class_numb = 0
-                for line in piece_of_objects_list:
-                    self.mosaic_classes.append(classes[class_numb])
-                    class_numb += 1
-                    new_line = [line[0] + self.rec_rec_list[i][0], line[1] + self.rec_rec_list[i][1],
-                                line[2] + self.rec_rec_list[i][0], line[3] + self.rec_rec_list[i][1]]
-                    self.rec_objects_list.append(new_line)
-                    self.yolo_objects_list.append(from_rec_to_yolo(new_line, self.img_width, self.img_height))
-                self.main_image.paste(img, (self.rec_rec_list[i][0], self.rec_rec_list[i][1]))
+            if len(self.rec_rec_list) > i:
+                rectangle = self.rec_rec_list.pop(i)
+                width = rectangle[2] - rectangle[0]
+                height = rectangle[3] - rectangle[1]
+                for n in range(20):
+                    number = randint(1, len(self.pair_list)-1)
+                    img, piece_of_objects_list, _, classes = self.pair_list[number].get_image_piece_with_object(width, height,
+                                                                                                        self.min_object_multiplier,
+                                                                                                        self.max_object_multiplier)
+                    if img:    
+                        break
+                if img:
+                    self.data_pairs_number += 1
+                    logging.info(f"Image in piece number {i} contains following objects: {piece_of_objects_list}")
+                    class_numb = 0
+                    for line in piece_of_objects_list:
+                        self.mosaic_classes.append(classes[class_numb])
+                        class_numb += 1
+                        new_line = [line[0] + rectangle[0], line[1] + rectangle[1],
+                                    line[2] + rectangle[0], line[3] + rectangle[1]]
+                        self.rec_objects_list.append(new_line)
+                        self.yolo_objects_list.append(from_rec_to_yolo(new_line, self.img_width, self.img_height))
+                    self.main_image.paste(img, (rectangle[0], rectangle[1]))

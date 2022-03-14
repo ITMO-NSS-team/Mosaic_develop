@@ -35,7 +35,9 @@ class MosaicController:
     max_images_in_mosaic = 5
 
     def __init__(self, input_img_folder: str, input_annotation_path: str,
-                 output_img_folder: str, output_txt_folder: str, format: str) -> None:
+                 output_img_folder: str, output_txt_folder: str, 
+                 format: str, min_mult: float = MIN_MULTIPLIER,
+                 max_mult: float = MAX_MULTIPLIER) -> None:
         """
         Constructor
 
@@ -46,8 +48,8 @@ class MosaicController:
         """
         logging.basicConfig(filename="mosaic_augment.log", level=logging.INFO)
         self.input_image_folder = input_img_folder
-        self.min_object_multiplier = MIN_MULTIPLIER
-        self.max_object_multiplier = MAX_MULTIPLIER
+        self.min_object_multiplier = min_mult
+        self.max_object_multiplier = max_mult
         self.start_number = 0
         self.end_number = 1
         self.output_image_folder = output_img_folder
@@ -71,23 +73,13 @@ class MosaicController:
         pic_number = randint(2, self.max_images_in_mosaic)
         rand_pairs_list = []
         for i in range(pic_number):
-            if i == 0:
-                stop = False
-                while not stop:
-                    pair = randint(0, self.pair_count - 1)
-                    if self.pair_list[pair].object_number == 0 or self.pair_list[pair].object_number == 1:
-                        rand_pairs_list.append(pair)
-                        stop = True
-            elif i == 1:
-                stop = False
-                while not stop:
-                    pair = randint(0, self.pair_count - 1)
-                    if self.pair_list[pair].object_number >= 1:
-                        rand_pairs_list.append(pair)
-                        stop = True
-            else:
+            stop = False
+            while not stop:
                 pair = randint(0, self.pair_count - 1)
-                rand_pairs_list.append(pair)
+                if self.pair_list[pair].object_number >= 1:
+                    rand_pairs_list.append(pair)
+                    stop = True
+
         logging.info(f"Chased {pic_number} images for mosaic. Images: {rand_pairs_list}")
         for i in range(pic_number):
             logging.info(f"People count on image number {i} - {rand_pairs_list[i]} = {self.pair_list[pair].object_number}")
