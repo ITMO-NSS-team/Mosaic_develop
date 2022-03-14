@@ -1,14 +1,16 @@
-from pickle import FALSE
 from random import randint
-#from tkinter import XView
 from tqdm import tqdm
 import logging
+
 from MosaicContainer.MosaicContainer import MosaicContainer
+
 from MosaicController.datasets_reading.xView import read_xView
 from MosaicController.datasets_reading.yolov4  import read_yolov4
 from MosaicController.datasets_reading.METU import read_METU
+
 from Constants.datatype_constants import YOLO, XVIEW, METU
-from Constants.mosaic_settings import MAX_MULTIPLIER, MIN_MULTIPLIER
+from Constants.mosaic_settings import MAX_MULTIPLIER, MIN_MULTIPLIER, MAX_IMAGES, \
+    IMAGES_FORMAT, ANNOTATIONS_FORMAT
 
 
 class MosaicController:
@@ -23,16 +25,16 @@ class MosaicController:
     output_txt_folder: str
     image_list: list
     txt_list: list
-    img_ext = ".jpg"
-    txt_ext = ".txt"
-    pair_list = []
+    img_ext: str = IMAGES_FORMAT
+    txt_ext: str = ANNOTATIONS_FORMAT
+    pair_list: list = []
 
     min_object_multiplier: int
     max_object_multiplier: int
 
     start_number: int
     end_number: int
-    max_images_in_mosaic = 10
+    max_images_in_mosaic: int = MAX_IMAGES
 
     def __init__(self, input_img_folder: str, input_annotation_path: str,
                  output_img_folder: str, output_txt_folder: str, 
@@ -70,10 +72,10 @@ class MosaicController:
         :return list - pairs list
         
         """
-        pic_number = randint(2, self.max_images_in_mosaic)
-        rand_pairs_list = []
+        pic_number: int = randint(2, self.max_images_in_mosaic)
+        rand_pairs_list: list = []
         for i in range(pic_number):
-            stop = False
+            stop: bool = False
             while not stop:
                 pair = randint(0, self.pair_count - 1)
                 if self.pair_list[pair].object_number >= 1:
@@ -85,31 +87,31 @@ class MosaicController:
             logging.info(f"People count on image number {i} - {rand_pairs_list[i]} = {self.pair_list[pair].object_number}")
         return rand_pairs_list
 
-    def set_min_object_multiplier(self, new_multiplier) -> None:
+    def set_min_object_multiplier(self, new_multiplier: float) -> None:
         """
         Set min object multiplier
         """
         self.min_object_multiplier = new_multiplier
 
-    def set_max_object_multiplier(self, new_multiplier) -> None:
+    def set_max_object_multiplier(self, new_multiplier: float) -> None:
         """
         Set max object multiplier
         """
         self.max_object_multiplier = new_multiplier
 
-    def set_max_images_in_mosaic(self, new_max) -> None:
+    def set_max_images_in_mosaic(self, new_max: int) -> None:
         """
         Set max images in mosaic
         """
         self.max_images_in_mosaic = new_max
 
-    def set_start_count(self, count) -> None:
+    def set_start_count(self, count: int) -> None:
         """
         Set start count
         """
         self.start_number = count
 
-    def set_end_count(self, count) -> None:
+    def set_end_count(self, count: int) -> None:
         """
         Set end count
         """
@@ -118,7 +120,7 @@ class MosaicController:
     def print_params(self) -> None:
         """
         Print parameters of class
-        """
+        
         print(f"--------------------------------------------------")
         print("Parameters of class:")
         print(f"Minimum object multiplier = {self.min_object_multiplier}")
@@ -132,6 +134,7 @@ class MosaicController:
         print(f"Start number {self.start_number}")
         print(f"End number {self.end_number}")
         print(f"--------------------------------------------------")
+        """
         logging.info(f"--------------------------------------------------")
         logging.info("Parameters of class:")
         logging.info(f"Minimum object multiplier = {self.min_object_multiplier}")
@@ -146,7 +149,7 @@ class MosaicController:
         logging.info(f"End number {self.end_number}")
         logging.info(f"--------------------------------------------------")
 
-    def make_mosaic(self, ):
+    def make_mosaic(self):
         """
         Make several mosaics from class data 
         """

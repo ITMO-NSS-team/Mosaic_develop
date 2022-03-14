@@ -48,59 +48,15 @@ def rectangles_intersection(rectangle_1: list, rectangle_2: list) -> bool:
             intersect = True
     return intersect
     
-def rectangles_intersection_old(rectangle_1: list, rectangle_2: list) -> bool:
-    """
-    This method check intersection of two rectangles
-    :param rectangle_1 - first rectangle
-    :param rectangle_2 - second rectangle
+def rectangle_correction(bbox: list, intersected_rectangle: list) -> list:
+    bbox[0]
+    if bbox[0] < intersected_rectangle[2]:
+        bbox[0] = intersected_rectangle[2]
+    elif bbox[2] > intersected_rectangle[0]:
+        bbox[2] = intersected_rectangle[0]
 
-    :return bool
-    """
-    rec1_x1, rec1_y1, rec1_x2, rec1_y2 = rectangle_1
-    rec2_x1, rec2_y1, rec2_x2, rec2_y2 = rectangle_2
-
-    x_y_match = (rec1_x1 < rec2_x2 < rec1_x2 or rec1_x1 < rec2_x1 < rec2_x2) and \
-        (rec2_y2 > rec1_y1 > rec2_y2 or rec1_y1 < rec2_y1 < rec1_y2)
-
-
-
-    in_match = rec1_x1 < rec2_x1 and rec1_y1 < rec2_y1 and rec1_x2 > rec2_x2 and rec1_y2 > rec2_y2
-
-    # x1, y1
-    # x1, y2
-    # x2, y1
-    # x2, vertical_line_match
-
-    angle_match = ((rec1_x1 < rec2_x1 < rec1_x2) and (rec1_y1 < rec2_y1 < rec1_y2)) or \
-            ((rec1_x1 < rec2_x1 < rec1_x2) and (rec1_y1 < rec2_y2 < rec1_y2)) or \
-            ((rec1_x1 < rec2_x2 < rec1_x2) and (rec1_y1 < rec2_y1 < rec1_y2)) or \
-            ((rec1_x1 < rec2_x2 < rec1_x2) and (rec1_y1 < rec2_y2 < rec1_y2))
-
-
-    out_match = (rec1_x1 < rec2_x1 and rec1_y1 > rec2_y1 and rec1_x2 > rec2_x2 and rec1_y2 < rec2_y2) or \
-            (rec1_x1 > rec2_x1 and rec1_y1 < rec2_y1 and rec1_x2 > rec2_x2 and rec1_y2 > rec2_y2)
-
-    point_match = False
-    rect = [rec1_x1, rec1_y1, rec1_x2, rec1_y2]
-    if point_intersection(rect, rec2_x1, rec2_y1):
-        point_match = True
-    if point_intersection(rect, rec2_x2, rec2_y2):
-        point_match = True
-    rect = [rec2_x1, rec2_y1, rec2_x2, rec2_y2]
-    if point_intersection(rect, rec1_x1, rec1_y1):
-        point_match = True
-    if point_intersection(rect, rec1_x2, rec1_y2):
-        point_match = True
-
-    vertical_line_match = line_intersect([rec1_x1, rec1_y1, rec1_x1, rec1_y2], [rec2_x1, rec2_y1, rec2_x2, rec2_y1]) or \
-            line_intersect([rec1_x1, rec1_y1, rec1_x1, rec1_y2], [rec2_x1, rec2_y2, rec2_x2, rec2_y2]) or \
-            line_intersect([rec1_x2, rec1_y1, rec1_x2, rec1_y2], [rec2_x1, rec2_y1, rec2_x2, rec2_y1]) or \
-            line_intersect([rec1_x2, rec1_y2, rec1_x1, rec1_y2], [rec2_x1, rec2_y2, rec2_x2, rec2_y2])
-
-    horizontal_line_match = False
-    horizontal_line_match = line_intersect([rec1_x1, rec1_y1, rec1_x2, rec1_y1], [rec2_x1, rec2_y1, rec2_x1, rec2_y2]) or \
-            line_intersect([rec1_x1, rec1_y1, rec1_x2, rec1_y1], [rec2_x2, rec2_y1, rec2_x2, rec2_y2]) or \
-            line_intersect([rec1_x1, rec1_y2, rec1_x2, rec1_y2], [rec2_x1, rec2_y1, rec2_x1, rec2_y2]) or \
-            line_intersect([rec1_x1, rec1_y2, rec1_x2, rec1_y2], [rec2_x2, rec2_y1, rec2_x2, rec2_y2])
-
-    return  x_y_match or in_match or angle_match or out_match or point_match or horizontal_line_match or vertical_line_match
+    if bbox[1] < intersected_rectangle[3]:
+        bbox[1] = intersected_rectangle[3]
+    elif bbox[3] > intersected_rectangle[1]:
+        bbox[3] = intersected_rectangle[1]
+    return bbox

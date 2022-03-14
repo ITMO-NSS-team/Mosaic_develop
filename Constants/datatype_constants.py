@@ -1,4 +1,4 @@
-
-YOLO = "YOLOv4"
-XVIEW = "XVIEW"
-METU = "METU"
+# Data types
+YOLO: str = "YOLOv4"
+XVIEW: str = "XVIEW"
+METU: str = "METU"

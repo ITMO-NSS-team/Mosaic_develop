@@ -1,10 +1,12 @@
-from pickle import FALSE
 from random import randint
 from os.path import join
 from typing import Tuple
 from PIL import Image
 import numpy as np
-from utils.rectangles_checks import point_intersection, rectangles_intersection
+
+from utils.images_utils import get_space_on_empty_image
+from utils.rectangles_checks import point_intersection, rectangles_intersection, \
+    rectangle_correction
 from utils.convertors import from_rec_to_yolo, from_yolo_to_rec
 
 class DataPair:
@@ -29,64 +31,37 @@ class DataPair:
         """
         Constructor
         :param image_folder - image folder
-        :param text_folder - annotation folder
         :param image_name - name of image file
-        :param txt_name - annotation file folder
+        :param objects - list of bounding boxes
+        :param classes - likst of classes of objects
         """
         self.image_folder = image_folder
         self.image_name = image_name
         image = Image.open(join(self.image_folder, self.image_name))
         self.img_width, self.img_height = image.size
         self.objects_classes = classes.copy()
+        self.object_number = len(self.objects_classes)
+
+        # Check for format of bounding boxes
         if type(objects[0][0]) is int:
+            # If it's just a rectangle
             self.rec_objects_list = objects.copy()
             self.yolo_objects_list = []
             for line in self.rec_objects_list:
-                self.yolo_objects_list.append(from_rec_to_yolo(line, self.img_width, self.img_height))
+                self.yolo_objects_list.append(from_rec_to_yolo(line,
+                    self.img_width, self.img_height))
         elif type(objects[0][0]) is np.float64:
+            # if it's in percentage
             self.rec_objects_list = []
             self.yolo_objects_list = objects.copy()
             for line in self.yolo_objects_list:
-                self.rec_objects_list.append(from_yolo_to_rec(line, self.img_width, self.img_height))
-        self.object_number = len(self.rec_objects_list)
-
-        
-        
-            
-
-    def create_obj_list(self) -> None:
-        """
-        This method reads annotation file and turns this data to list of lists of float
-        """
-        with open(join(self.text_folder, self.txt_name)) as f:
-            lines = f.readlines()
-            for line in lines:
-                line1 = line.strip('\n').split(' ')
-                float_line = list(np.float_(line1))
-                self.objects_classes.append(int(float_line[0]))
-                float_line.pop(0)
-                self.yolo_objects_list.append(float_line)
-            for i in range(len(self.yolo_objects_list)):
-                self.rec_objects_list.append(self.from_cross_to_rec(i))
-            self.object_number = len(self.rec_objects_list)
-
-    def from_cross_to_rec(self, number: int) -> list:
-        """
-        This method turns annotations in YOLO format into rectangle coordinates
-        """
-        box_w = int(self.yolo_objects_list[number][2] * self.img_width)
-        box_h = int(self.yolo_objects_list[number][3] * self.img_height)
-        x_mid = int(self.yolo_objects_list[number][0] * self.img_width + 1)
-        y_mid = int(self.yolo_objects_list[number][1] * self.img_height + 1)
-        x_min = int(x_mid - box_w / 2) + 1
-        x_max = int(x_mid + box_w / 2) - 1
-        y_min = int(y_mid - box_h / 2) + 1
-        y_max = int(y_mid + box_h / 2) - 1
-        return [x_min, y_min, x_max, y_max]
+                self.rec_objects_list.append(from_yolo_to_rec(line, self.img_width, 
+                self.img_height))
 
     def get_free_space_on_image(self, width: int, height: int) -> Tuple[bool, list]:
         """
-        This method returns image part without any objects and four coordinates of this piece
+        This method returns image part without any objects and four 
+        coordinates of this piece
         
         :param width
         :param height
@@ -94,70 +69,58 @@ class DataPair:
         :return Image - returns Image or False
         :return out_list - coordinates of image part
         """
-        out_list = []
+        out_list: list = []
         if self.object_number == 0:
-            if self.img_width == width:
-                out_x1 = 0
-                out_x2 = width
-            elif self.img_width > width:
-                out_x1 = randint(0, int(self.img_width - width))
-                out_x2 = out_x1 + width
+            out_list = get_space_on_empty_image(self.img_width, 
+            self.img_height, width, height)
+            if out_list:
+                return self.get_image().crop((out_list[0], out_list[1], 
+                out_list[2], out_list[3])), out_list
             else:
-                return False, out_list
-            if self.img_height == height:
-                out_y1 = 0
-                out_y2 = width
-            elif self.img_height > height:
-                out_y1 = randint(0, int(self.img_height - height))
-                out_y2 = out_y1 + height
-            else:
-                return False, out_list
-            return self.get_image().crop((out_x1, out_y1, out_x2, out_y2)), out_list
+                return False, []
         else:
             areas = []
-            x, y = 0, 0
+            x: int = 0
+            y: int = 0
             for n in range(15):
-                stop = False
+                stop: bool = False
                 while not stop:
                     x = randint(0, self.img_width - 1)
                     y = randint(0, self.img_height - 1)
                     stop = True
                     for line in self.rec_objects_list:
-                        if point_intersection([line[0], line[1], line[2], line[3]], x, y):
+                        if point_intersection([line[0], line[1], line[2], 
+                        line[3]], x, y):
                             stop = False
 
-                out_x1 = x - randint(0, x)
-                out_y1 = y - randint(0, y)
-                out_x2 = randint(x, self.img_width - 1)
-                out_y2 = randint(y, self.img_height - 1)
+                out_x1: int = x - randint(0, x)
+                out_y1: int = y - randint(0, y)
+                out_x2: int = randint(x, self.img_width - 1)
+                out_y2: int = randint(y, self.img_height - 1)
+                bbox = [out_x1, out_y1, out_x2, out_y2]
 
                 for i in range(len(self.rec_objects_list)):
-                    if rectangles_intersection([out_x1, out_y1, out_x2, out_y2], [self.rec_objects_list[i][0],
-                                                                                  self.rec_objects_list[i][1],
-                                                                                  self.rec_objects_list[i][2],
-                                                                                  self.rec_objects_list[i][3]]):
-                        if out_x1 < self.rec_objects_list[i][2]:
-                            out_x1 = self.rec_objects_list[i][2]
-                        elif out_x2 > self.rec_objects_list[i][0]:
-                            out_x2 = self.rec_objects_list[i][0]
+                    if rectangles_intersection(bbox, 
+                                                [self.rec_objects_list[i][0],
+                                                self.rec_objects_list[i][1],
+                                                self.rec_objects_list[i][2],
+                                                self.rec_objects_list[i][3]]):
+                        bbox = rectangle_correction(bbox, 
+                                                self.rec_objects_list[i])
+                areas.append(bbox)
 
-                        if out_y1 < self.rec_objects_list[i][3]:
-                            out_y1 = self.rec_objects_list[i][3]
-                        elif out_y2 > self.rec_objects_list[i][1]:
-                            out_y2 = self.rec_objects_list[i][1]
-                areas.append([out_x1, out_y1, out_x2, out_y2])
-
-            max_number = 0
-            max_area = (areas[0][2] - areas[0][0]) * (areas[0][3] - areas[0][1])
+            max_number: int = 0
+            max_area: list = (areas[0][2] - areas[0][0]) * (areas[0][3] - areas[0][1])
             for i in range(len(areas)):
                 if max_area < (areas[i][2] - areas[i][0]) * (areas[i][3] - areas[i][1]):
                     max_area = (areas[i][2] - areas[i][0]) * (areas[i][3] - areas[i][1])
-                    max_number = i
-            out_x1 = areas[max_number][0]
-            out_y1 = areas[max_number][1]
-            out_x2 = areas[max_number][2]
-            out_y2 = areas[max_number][3]
-            out_list = [out_x1, out_y1, out_x2, out_y2]
+                    max_number: int = i
+            out_x1: int = areas[max_number][0]
+            out_y1: int = areas[max_number][1]
+            out_x2: int = areas[max_number][2]
+            out_y2: int = areas[max_number][3]
+
+            out_list: list = [out_x1, out_y1, out_x2, out_y2]
             if out_x2 - out_x1 > 1 and out_y2 - out_y1 > 1:
                 if out_x2 - out_x1 >= width and out_y2 - out_y1 >= height:
                     return self.get_image().crop((out_x1, out_y1, out_x1 + width, out_y1 + height)), out_list
@@ -172,7 +135,8 @@ class DataPair:
                         multiplier_height = height / new_height
 
                     if multiplier_width > multiplier_height:
-                        img = self.get_image().crop((out_x1, out_y1, out_x2, out_y2))
+                        img = self.get_image().crop((out_x1, out_y1, 
+                        out_x2, out_y2))
                         new_image = img.resize((int(new_width * multiplier_width), int(new_height * multiplier_width)))
                     else:
                         img = self.get_image().crop((out_x1, out_y1, out_x2, out_y2))
@@ -187,14 +151,17 @@ class DataPair:
         """
         return Image.open(join(self.image_folder, self.image_name))
 
-    def get_image_piece_with_object(self, width, height, min_multiplier, max_multiplier) -> Tuple[bool, list, list, list]:
+    def get_image_piece_with_object(self, width: int, height: int, 
+        min_multiplier: float, max_multiplier: float) -> Tuple[bool, list, list, list]:
         """
-        This method returns image part with one or several objects and four coordinates of this piece
+        This method returns image part with one or several 
+        objects and four coordinates of this piece
 
         :param width
         :param height
         :param min_multiplier - min object multiplier
         :param max_multiplier - max object multiplier
+
         :return Image - returns Image or False
         :return out_rec_list - coordinates of image part
         :return out_pic_rect - coordinates of object
@@ -208,10 +175,10 @@ class DataPair:
             return False, out_rec_list, out_pic_rect, classes_list
         else:
             first_man_number = randint(0, len(self.rec_objects_list) - 1)
-            out_x1 = self.rec_objects_list[first_man_number][0]
-            out_y1 = self.rec_objects_list[first_man_number][1]
-            out_x2 = self.rec_objects_list[first_man_number][2]
-            out_y2 = self.rec_objects_list[first_man_number][3]
+            out_x1: int = self.rec_objects_list[first_man_number][0]
+            out_y1: int = self.rec_objects_list[first_man_number][1]
+            out_x2: int = self.rec_objects_list[first_man_number][2]
+            out_y2: int = self.rec_objects_list[first_man_number][3]
             objects_in_cropped_images = [first_man_number]
             is_stop = True
             while is_stop:
@@ -237,12 +204,12 @@ class DataPair:
                         out_y2 += randint(0, self.img_height - out_y2)
                 is_stop = False
                 for i in range(len(self.rec_objects_list)):
-                    if rectangles_intersection([out_x1, out_y1, out_x2, out_y2], [self.rec_objects_list[i][0],
-                                                                                  self.rec_objects_list[i][1],
-                                                                                  self.rec_objects_list[i][2],
-                                                                                  self.rec_objects_list[i][
-                                                                                      3]]) and not (
-                            i in objects_in_cropped_images):
+                    if rectangles_intersection([out_x1, out_y1, out_x2, out_y2], 
+                                                    [self.rec_objects_list[i][0],
+                                                    self.rec_objects_list[i][1],
+                                                    self.rec_objects_list[i][2],
+                                                    self.rec_objects_list[i][3]]) \
+                                                    and not (i in objects_in_cropped_images):
                         is_stop = True
                         if out_x1 > self.rec_objects_list[i][0]:
                             out_x1 = self.rec_objects_list[i][0]
@@ -263,10 +230,10 @@ class DataPair:
                 classes_list.append(self.objects_classes[number])
             out_pic_rect = [out_x1, out_y1, out_x2, out_y2]
             if not (width == 0 or height == 0):
-                new_width = out_x2 - out_x1
-                new_height = out_y2 - out_y1
-                multiplier_width = width / new_width
-                multiplier_height = height / new_height
+                new_width: int= out_x2 - out_x1
+                new_height: int = out_y2 - out_y1
+                multiplier_width: int = width / new_width
+                multiplier_height: int = height / new_height
                 img = self.get_image().crop((out_x1, out_y1, out_x2, out_y2))
                 if multiplier_width < multiplier_height:
                     if not min_multiplier < multiplier_width < max_multiplier:

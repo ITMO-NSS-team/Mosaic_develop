@@ -11,7 +11,7 @@ txt_ext = [".txt", ".TXT"]
 
 def create_obj_list(annotation_folder: str, annotation_filde: str) -> list:
         """
-        This method reads annotation file and turns this data to list of lists of float
+        This method reads annotation file and turns this data to two lists - boxes and classes
         """
         yolo_objects_list = []
         objects_classes = []
