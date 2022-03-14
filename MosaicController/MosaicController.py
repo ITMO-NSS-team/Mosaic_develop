@@ -32,7 +32,7 @@ class MosaicController:
 
     start_number: int
     end_number: int
-    max_images_in_mosaic = 5
+    max_images_in_mosaic = 10
 
     def __init__(self, input_img_folder: str, input_annotation_path: str,
                  output_img_folder: str, output_txt_folder: str, 
