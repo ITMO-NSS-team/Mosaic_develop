@@ -20,9 +20,6 @@ if __name__ == "__main__":
     # -outputImagesFolder <output images folder> - folder of images of mosaic
     # -outputAnnotationsFolder <output annotations folder> - folder of annotations of mosaic
 
-    # -m - ручной режим работы -
-    # -v - вывод списка дисков и регистраций -
-    # Константы для форматированного вывода и файла регистрации
     start = time.time()
     required_args = True
     now = datetime.now()
@@ -30,40 +27,50 @@ if __name__ == "__main__":
     print(f"Current time: {dt_string}")
     parser = argparse.ArgumentParser(description="Mosaic data generator", formatter_class=RawTextHelpFormatter,
     epilog=('''
-    Test now
-    '''))
+        Usage
+        
+        python3 start.py -t <TYPE> -s <start number> -e <end number> 
+            -imputImagesFolder <imputImagesFolder> 
+            -inputAnnotationsFolder <inputAnnotationsFolder>
+            -outputImagesFolder <outputImagesFolder>
+            -outputAnnotationsFolder <outputAnnotationsFolder>
+
+        Generator now supports datasets in YOLO format.
+        Also it supports METU and xView datasets. But using any other datasets in
+        json-format annotations requires writing new datareader 
+        because of differences in annotations' format and structures.
+        Also now generator support only rectangle bounding boxes. WIP.
+
+        '''))
     dataType_group = parser.add_argument_group()
     dataType_group.add_argument("-t", dest="TYPE", default="YOLO", type=str, \
-        help=" Type of input data, can be YOLO, METU, xVIEW datasets", required=required_args)
+        help="Type of input data, can be YOLO, METU, xVIEW datasets", required=required_args)
 
     mosaicNumber_group = parser.add_argument_group()
     mosaicNumber_group.add_argument("-s", dest="start_number", default="0", type=int, \
-        help=" Number of the first of mosaic that will be create", required=required_args)
+        help="Number of the first of mosaic that will be create", required=required_args)
     mosaicNumber_group.add_argument("-e", dest="end_number", default="10", type=int, \
-        help=" Number of the last of mosaic that will be create", required=required_args)
+        help="Number of the last of mosaic that will be create", required=required_args)
 
     inputPaths_group = parser.add_argument_group()
     inputPaths_group.add_argument("-imputImagesFolder", dest="imputImagesFolder", type=str, \
-        help=" Folder of images for mosaic", required=required_args)
+        help="Folder of images for mosaic", required=required_args)
     inputPaths_group.add_argument("-inputAnnotationsFolder", dest="inputAnnotationsFolder", type=str, \
-        help=" Folder/file of annotations for mosaic", required=required_args)
+        help="Folder/file of annotations for mosaic", required=required_args)
 
     outputPaths_group = parser.add_argument_group()
     outputPaths_group.add_argument("-outputImagesFolder", dest="outputImagesFolder", type=str, \
-        help=" Folder of images of mosaic", required=required_args)
+        help="Folder of images of mosaic", required=required_args)
     outputPaths_group.add_argument("-outputAnnotationsFolder", dest="outputAnnotationsFolder", type=str, \
-        help=" Folder of annotations of mosaic", required=required_args)
+        help="Folder of annotations of mosaic", required=required_args)
 
     args = parser.parse_args()
 
     if args.TYPE == "YOLO":
-        print ("It works! YOLO")
         data_type = YOLO
     elif args.TYPE == "METU":
-        print ("It works! METU")
         data_type = METU
     elif args.TYPE == "xVIEW":
-        print ("It works! xVIEW")
         data_type = XVIEW
     else:
         print ("ERROR! Wrong dataset type was given!")
@@ -71,17 +78,14 @@ if __name__ == "__main__":
 
     print (args.start_number)
     print (args.end_number)
-
+    """
     images = "/media/nikita/HDD/datasets/METU-ALET/ALET/trainv4"
-    json_file = "/media/nikita/HDD/datasets/METU-ALET/ALET/trainv4.json" 
-
-
+    json_file = "/media/nikita/HDD/datasets/METU-ALET/ALET/trainv4.json"
 
     img_folder = '/home/balin/Downloads/archive(1)/aerial-cars-dataset/images/train/'
     txt_folder = '/home/balin/Downloads/archive(1)/aerial-cars-dataset/labels/train' 
     out_img_folder = "/mnt/HDD/mosaics/img"
     out_txt_folder = "/mnt/HDD/mosaics/txt"
-    """
     Img_mosaic = MosaicController(img_folder, txt_folder, \
         out_img_folder, out_txt_folder, YOLO)
     Img_mosaic.set_start_count(0)
@@ -105,4 +109,4 @@ if __name__ == "__main__":
     Img_mosaic.set_end_count(args.end_number)
     Img_mosaic.make_mosaic()
     end = time.time()
-    print(end - start)
+    print(f"Times taken: {end - start}")
