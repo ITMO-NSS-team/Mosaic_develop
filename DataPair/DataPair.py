@@ -8,6 +8,7 @@ from utils.coord_utils import first_coord_change_for_bb, second_coord_change_for
 from utils.rectangles_checks import rectangles_intersection, multiply, \
     rectangle_correction_with_objects
 from utils.convertors import from_rec_to_yolo, from_yolo_to_rec
+from Constants.mosaic_settings import ATTEMPTS_FOR_GET_IMAGE_WITH_OBJECT
 
 class DataPair:
     """
@@ -101,14 +102,14 @@ class DataPair:
         if self.object_number == 0 or (30 >= width > 0) or (30 >= height > 0):
             return False, out_rec_list, out_pic_rect, classes_list
         else:
-            first_man_number = randint(0, len(self.rec_objects_list) - 1)
-            out_x1: int = self.rec_objects_list[first_man_number][0]
-            out_y1: int = self.rec_objects_list[first_man_number][1]
-            out_x2: int = self.rec_objects_list[first_man_number][2]
-            out_y2: int = self.rec_objects_list[first_man_number][3]
-            objects_in_cropped_images = [first_man_number]
             stop: bool = False
-            while not stop:
+            for _ in range(ATTEMPTS_FOR_GET_IMAGE_WITH_OBJECT):
+                first_man_number = randint(0, len(self.rec_objects_list) - 1)
+                out_x1: int = self.rec_objects_list[first_man_number][0]
+                out_y1: int = self.rec_objects_list[first_man_number][1]
+                out_x2: int = self.rec_objects_list[first_man_number][2]
+                out_y2: int = self.rec_objects_list[first_man_number][3]
+                objects_in_cropped_images = [first_man_number]
                 out_x1 = first_coord_change_for_bb(out_x1, width)
                 out_y1 = first_coord_change_for_bb(out_y1, height)
                 out_x2 = second_coord_change_for_bb(out_x2, width, self.img_width)
@@ -121,6 +122,8 @@ class DataPair:
                         stop = False
                         out_x1, out_y1, out_x2, out_y2 = rectangle_correction_with_objects([out_x1, out_y1, out_x2, out_y2], self.rec_objects_list[i])
                         objects_in_cropped_images.append(i)
+                if stop:
+                    break
 
             out_rec_list: list = []
             for number in objects_in_cropped_images:
