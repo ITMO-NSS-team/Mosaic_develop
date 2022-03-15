@@ -3,7 +3,10 @@ from random import randint
 from os.path import join
 from PIL import Image
 import logging
-from utils.rectangles_checks import point_intersection, rectangles_intersection
+
+import cv2
+from utils.rectangles_checks import point_intersection, rectangles_intersection, rectangle_correction, is_not_degenerate
+from utils.images_utils import get_space_on_empty_image
 from utils.convertors import from_rec_to_yolo
 from Constants.mosaic_settings import DELTA_Y, MAX_MULTIPLIER, MIN_MULTIPLIER, DELTA_X, DELTA_Y
 
@@ -13,7 +16,6 @@ class MosaicContainer:
     image and txt-annotation of mosaic.
     """
     objects_number: int
-    pieces_number: int
     img_width: int
     img_height: int
     yolo_objects_list: list
@@ -29,6 +31,7 @@ class MosaicContainer:
     data_pairs_number: int
     min_object_multiplier: int
     max_object_multiplier: int
+    areas_list: list
 
     def __init__(self, pairs: list, arg_img_folder: str, arg_txt_folder: str, filename: str):
         """
@@ -45,12 +48,15 @@ class MosaicContainer:
         self.min_object_multiplier = MIN_MULTIPLIER
         self.max_object_multiplier = MAX_MULTIPLIER
         self.pair_classes = []
-        self.mosaic_classes = []
-        self.pieces_number = 0
+        self.mosaic_classes = pairs[0].objects_classes.copy()
         self.pair_list = pairs.copy()
-        self.yolo_objects_list = []
+        self.yolo_objects_list = pairs[0].yolo_objects_list.copy()
         self.rec_objects_list = pairs[0].rec_objects_list.copy()
+
+        # list for small areas aroun objects to improve quality 
         self.rec_rec_list = []
+        # list of inserted areas
+        self.areas_list = []
         self.img_width = pairs[0].img_width
         self.img_height = pairs[0].img_height
         self.main_image = pairs[0].get_image()
@@ -58,22 +64,7 @@ class MosaicContainer:
         self.txt_folder = arg_txt_folder
         self.objects_number = pairs[0].object_number
         self.filename = filename
-        for i in range(0, len(self.pair_list) - 1):
-            if self.pair_list[i].object_number != len(self.pair_list[i].rec_objects_list):
-                self.pair_list[i].object_number = len(self.pair_list[i].rec_objects_list)
-
-        if self.objects_number == 1:
-            self.mosaic_classes.append(pairs[0].objects_classes[0])
-            self.yolo_objects_list.append(from_rec_to_yolo(self.rec_objects_list[0], self.img_width, self.img_height))
-            self.get_small_area(self.rec_objects_list[0], DELTA_X, DELTA_Y)
-        elif self.objects_number > 1:
-            for i in range(len(pairs[0].objects_classes)):
-                self.mosaic_classes.append(pairs[0].objects_classes[i])
-                self.yolo_objects_list.append(from_rec_to_yolo(self.rec_objects_list[i], self.img_width, self.img_height))
-                self.get_small_area(self.rec_objects_list[i], DELTA_X, DELTA_Y)
-        else:
-            self.objects_number = 0
-            self.pieces_number = 0
+        self.get_small_area(DELTA_X, DELTA_Y)
         logging.info('Mosaic main image is ready')
 
     def make_mosaic(self) -> bool:
@@ -84,8 +75,7 @@ class MosaicContainer:
         """
         for i in range(0, len(self.pair_list) - 1):
             self.get_part_main_image()
-        logging.info(f"Pieces in mosaic number: {self.pieces_number}")
-        logging.info(f"Pieces in mosaic: {self.rec_rec_list}")
+        logging.info(f"Pieces in mosaic: {len(self.rec_rec_list)}")
         self.insert_pics()
         if self.write_in_files():
             logging.info(f"Mosaic pair number {self.filename} was wrote successful!")
@@ -95,7 +85,7 @@ class MosaicContainer:
         return False
        
 
-    def get_small_area(self, obj_coordinates, delta_w: int, delta_h: int) -> None:
+    def get_small_area(self, delta_w: int, delta_h: int) -> None:
         """
         Create random area around one single object on image
 
@@ -104,13 +94,13 @@ class MosaicContainer:
         :param delta_h - height of area
         """
         def first_coord_change(coord: int, delta: int) -> int:
-            if obj_coordinates[0] - delta_w >= 0:
+            if coord - delta >= 0:
                 out_coord = coord - randint(0, delta)
             else:
                 out_coord = coord - randint(0, coord)
             return out_coord
 
-        def second_doord_change(coord: int, delta: int, size: int) -> int:
+        def second_coord_change(coord: int, delta: int, size: int) -> int:
             if coord + delta <= size - 1:
                 out_coord = coord + randint(0, delta)
             else:
@@ -119,13 +109,12 @@ class MosaicContainer:
                 else:
                     out_coord = coord + randint(0, size - coord)
             return out_coord
-
-        out_x1 = first_coord_change(obj_coordinates[0], delta_w)
-        out_y1 = first_coord_change(obj_coordinates[1], delta_h)
-        out_x2 = second_doord_change(obj_coordinates[2], delta_w, self.img_width)
-        out_y2 = second_doord_change(obj_coordinates[3], delta_h, self.img_height)
-        self.rec_rec_list.append([out_x1, out_y1, out_x2, out_y2])
-        self.pieces_number += 1
+        for bbox in self.rec_objects_list:
+            out_x1 = first_coord_change(bbox[0], delta_w)
+            out_y1 = first_coord_change(bbox[1], delta_h)
+            out_x2 = second_coord_change(bbox[2], delta_w, self.img_width)
+            out_y2 = second_coord_change(bbox[3], delta_h, self.img_height)
+            self.rec_rec_list.append([out_x1, out_y1, out_x2, out_y2])
 
     def write_in_files(self) -> bool:
         """
@@ -135,149 +124,93 @@ class MosaicContainer:
         if self.objects_number != 0:
             if self.data_pairs_number != 0:
                 self.main_image.save(join(self.image_folder, self.filename + ".jpg"))
-                class_number = 0
                 with open(join(self.txt_folder, self.filename + ".txt"), 'w') as f:
-                    for item in self.yolo_objects_list:
-                        f.write(f"{self.mosaic_classes[class_number]} ")
-                        class_number += 1
-                        for numb in item:
+                    for i in range(len(self.yolo_objects_list)):
+                        f.write(f"{self.mosaic_classes[i]} ")
+                        for numb in self.yolo_objects_list[i]:
                             f.write(f"{numb} ")
                         f.write("\n")
                 return True
         return False
 
-    def get_part_main_image(self) -> None:
+    def get_part_main_image(self):
         """
-        Get random empty part of image
+        This method returns image part without any objects - four 
+        coordinates of this piece
+        
+        :param width
+        :param height
 
+        :return Image - returns Image or False
+        :return out_list - coordinates of image part
         """
-        areas = []
+        out_list: list = []
         if len(self.rec_rec_list) == 0:
-            for n in range(15):
-                out_x1 = randint(0, self.img_width - 1)
-                out_y1 = randint(0, self.img_height - 1)
-                if out_x1 == self.img_width - 1:
-                    out_x2 = out_x1
-                else:
-                    out_x2 = randint(out_x1, self.img_width - 1)
-                if out_y1 == self.img_height - 1:
-                    out_y2 = out_y1
-                else:
-                    out_y2 = randint(out_y1, self.img_height - 1)
-                areas.append([out_x1, out_y1, out_x2, out_y2])
-            max_number = 0
-            max_area = (areas[0][2] - areas[0][0]) * (areas[0][3] - areas[0][1])
-            for i in range(len(areas)):
-                if max_area < (areas[i][2] - areas[i][0]) * (areas[i][3] - areas[i][1]):
-                    max_area = (areas[i][2] - areas[i][0]) * (areas[i][3] - areas[i][1])
-                    max_number = i
-            out_x1 = areas[max_number][0]
-            out_y1 = areas[max_number][1]
-            out_x2 = areas[max_number][2]
-            out_y2 = areas[max_number][3]
-            self.rec_rec_list.append([out_x1, out_y1, out_x2, out_y2])
-            self.pieces_number += 1
+            out_list = get_space_on_empty_image(self.img_width, self.img_height)
+            self.areas_list.append(out_list)
         else:
-            for n in range(15):
-                x, y = 0, 0
-                stop = False
-                while not stop:
-                    x = randint(1, self.img_width - 1)
-                    y = randint(1, self.img_height - 1)
-                    stop = True
-                    for line in self.rec_rec_list:
-                        if point_intersection(line, x, y):
-                            stop = False
+            main_stop = False
+            while not main_stop:
+                areas = []
+                x: int = 0
+                y: int = 0
+                for n in range(15):
+                    stop: bool = False
+                    while not stop:
+                        x = randint(0, self.img_width - 1)
+                        y = randint(0, self.img_height - 1)
+                        stop = True
+                        for bbox in self.rec_rec_list:
+                            if point_intersection(bbox, x, y):
+                                stop = False
+                        for bbox in self.areas_list:
+                            if point_intersection(bbox, x, y):
+                                stop = False
 
-                out_x1 = x - randint(0, x)
-                out_y1 = y - randint(0, y)
-                out_x2 = randint(x, self.img_width - 1)
-                out_y2 = randint(y, self.img_height - 1)
-                is_good_area = False
-
-                for i in range(len(self.rec_rec_list)):
-                    for line in self.rec_rec_list:
-                        if rectangles_intersection([out_x1, out_y1, out_x2, out_y2],
-                                                   line):
-                            if out_x1 < line[0] and out_y1 > line[1]:
-                                if line[0] - 1 >= 0:
-                                    out_x2 = line[0] - 1
-                                else:
-                                    out_x2 = line[0]
-                            if out_x1 > line[0] and out_y1 < line[1]:
-                                if line[1] - 1 >= 0:
-                                    out_y2 = line[1] - 1
-                                else:
-                                    out_y2 = line[1]
-                            if out_x2 > line[2] and out_y2 < line[3]:
-                                if line[2] + 1 <= self.img_width:
-                                    out_x1 = line[2] + 1
-                                else:
-                                    out_x1 = line[2]
-
-                            if out_x2 < line[2] and out_y2 > line[3]:
-                                if line[3] + 1 <= self.img_height:
-                                    out_y1 = line[3] + 1
-                                else:
-                                    out_y1 = line[3]
-                            # if up point is higher 
-                            if out_x1 < line[0]:
-                                if line[0] - 1 >= 0:
-                                    out_x2 = line[0] - 1
-                                else:
-                                    out_x2 = line[0]
-                            # if up point is left
-                            if out_y1 < line[1]:
-                                if line[1] - 1 >= 0:
-                                    out_y2 = line[1] - 1
-                                else:
-                                    out_y2 = line[1]
-                            # if lower point is lower    
-                            if out_x2 > line[2]:
-                                if line[2] + 1 <= self.img_width:
-                                    out_x1 = line[2] + 1
-                                else:
-                                    out_x1 = line[2]
-                            # if lower point is right  
-                            if out_y2 > line[3]:
-                                if line[3] + 1 <= self.img_height:
-                                    out_y1 = line[3] + 1
-                                else:
-                                    out_y1 = line[3]
-
-                            if rectangles_intersection([out_x1, out_y1, out_x2, out_y2],
-                                                       line):
+                    out_x1: int = x - randint(0, x)
+                    out_y1: int = y - randint(0, y)
+                    out_x2: int = randint(x, self.img_width - 1)
+                    out_y2: int = randint(y, self.img_height - 1)
+                    bbox = [out_x1, out_y1, out_x2, out_y2]
+                    is_good_area: bool = True
+                    for existing_bbox in self.rec_rec_list:
+                        if rectangles_intersection(bbox, existing_bbox):
+                            bbox = rectangle_correction(bbox, existing_bbox)
+                    for existing_bbox in self.rec_rec_list:
+                        if rectangles_intersection(bbox, existing_bbox):
+                            if rectangles_intersection(bbox, existing_bbox):
                                 is_good_area = False
                                 break
-                            else:
-                                is_good_area = True
-                if is_good_area:
-                    areas.append([out_x1, out_y1, out_x2, out_y2])
-            if not len(areas) == 0:
-                max_number = 0
-                max_area = (areas[0][2] - areas[0][0]) * (areas[0][3] - areas[0][1])
-                for i in range(len(areas)):
-                    if max_area < (areas[i][2] - areas[i][0]) * (areas[i][3] - areas[i][1]):
-                        max_area = (areas[i][2] - areas[i][0]) * (areas[i][3] - areas[i][1])
-                        max_number = i
-                out_x1 = areas[max_number][0]
-                out_y1 = areas[max_number][1]
-                out_x2 = areas[max_number][2]
-                out_y2 = areas[max_number][3]
-                if out_x2 - out_x1 > 1 and out_y2 - out_y1 > 1:
-                    self.rec_rec_list.append([out_x1, out_y1, out_x2, out_y2])
-                    self.pieces_number += 1
+                    for existing_bbox in self.areas_list:
+                        if rectangles_intersection(bbox, existing_bbox):
+                            bbox = rectangle_correction(bbox, existing_bbox)
+                    for existing_bbox in self.areas_list:
+                        if rectangles_intersection(bbox, existing_bbox):
+                            if rectangles_intersection(bbox, existing_bbox):
+                                is_good_area = False
+                                break
+                    if is_not_degenerate(bbox) and is_good_area:
+                        areas.append(bbox)
+                if len(areas):
+                    max_number: int = 0
+                    max_area: list = (areas[0][2] - areas[0][0]) * (areas[0][3] - areas[0][1])
+                    for i in range(len(areas)):
+                        if max_area < (areas[i][2] - areas[i][0]) * (areas[i][3] - areas[i][1]):
+                            max_area = (areas[i][2] - areas[i][0]) * (areas[i][3] - areas[i][1])
+                            max_number: int = i
+                    self.areas_list.append(areas[max_number])
+                main_stop = True
 
     def insert_pics(self) -> None:
         """
         Insert random parts with objects from pair images into empty parts of Main Image
 
         """
-        for i in range(self.objects_number, len(self.rec_rec_list)):
-            if len(self.rec_rec_list) > i:
-                rectangle = self.rec_rec_list[i]
-                width = rectangle[2] - rectangle[0]
-                height = rectangle[3] - rectangle[1]
+        for i in range(len(self.areas_list)):
+            if i < len(self.areas_list):
+                rectangle = self.areas_list.pop(i)
+                width: int = rectangle[2] - rectangle[0]
+                height: int = rectangle[3] - rectangle[1]
                 for n in range(20):
                     number = randint(1, len(self.pair_list)-1)
                     img, piece_of_objects_list, _, classes = self.pair_list[number].get_image_piece_with_object(width, height,
@@ -288,12 +221,11 @@ class MosaicContainer:
                 if img:
                     self.data_pairs_number += 1
                     logging.info(f"Image in piece number {i} contains following objects: {piece_of_objects_list}")
-                    class_numb = 0
-                    for line in piece_of_objects_list:
-                        self.mosaic_classes.append(classes[class_numb])
-                        class_numb += 1
-                        new_line = [line[0] + rectangle[0], line[1] + rectangle[1],
-                                    line[2] + rectangle[0], line[3] + rectangle[1]]
+                    for i in range(len(piece_of_objects_list)):
+                        self.mosaic_classes.append(classes[i])
+                        new_line = [piece_of_objects_list[i][0] + rectangle[0], piece_of_objects_list[i][1] + rectangle[1],
+                                    piece_of_objects_list[i][2] + rectangle[0], piece_of_objects_list[i][3] + rectangle[1]]
                         self.rec_objects_list.append(new_line)
                         self.yolo_objects_list.append(from_rec_to_yolo(new_line, self.img_width, self.img_height))
                     self.main_image.paste(img, (rectangle[0], rectangle[1]))
+                    

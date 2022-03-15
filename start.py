@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # -outputAnnotationsFolder <output annotations folder> - folder of annotations of mosaic
 
     start = time.time()
-    required_args = True
+    required_args = False
     now = datetime.now()
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     print(f"Current time: {dt_string}")
@@ -78,20 +78,20 @@ if __name__ == "__main__":
 
     print (args.start_number)
     print (args.end_number)
-    """
+    
     images = "/media/nikita/HDD/datasets/METU-ALET/ALET/trainv4"
     json_file = "/media/nikita/HDD/datasets/METU-ALET/ALET/trainv4.json"
 
-    img_folder = '/home/balin/Downloads/archive(1)/aerial-cars-dataset/images/train/'
-    txt_folder = '/home/balin/Downloads/archive(1)/aerial-cars-dataset/labels/train' 
-    out_img_folder = "/mnt/HDD/mosaics/img"
-    out_txt_folder = "/mnt/HDD/mosaics/txt"
+    img_folder = '/media/nikita/HDD/datasets/METU-ALET/ALET/trainv4'
+    txt_folder = '/media/nikita/HDD/datasets/METU-ALET/ALET/trainv4.json' 
+    out_img_folder = "/media/nikita/HDD/test/new_test/img"
+    out_txt_folder = "/media/nikita/HDD/test/new_test/txt"
     Img_mosaic = MosaicController(img_folder, txt_folder, \
-        out_img_folder, out_txt_folder, YOLO)
+        out_img_folder, out_txt_folder, METU)
     Img_mosaic.set_start_count(0)
     Img_mosaic.set_end_count(2000)
     Img_mosaic.make_mosaic()
-    """
+    
     
     """
     
@@ -102,6 +102,15 @@ if __name__ == "__main__":
     '/home/balin/Downloads/archive(1)/aerial-cars-dataset/labels/train' 
     -outputImagesFolder 
     /mnt/HDD/mosaics/img -outputAnnotationsFolder /mnt/HDD/mosaics/txt
+
+    /bin/python3 /home/nikita/Desktop/Mosaic_develop/start.py -t xVIEW -s 0 -e 100 -imputImagesFolder /media/nikita/HDD/datasets/xView/train_images/train_images -inputAnnotationsFolder /media/nikita/HDD/datasets/xView/train_labels/xView_train.geojson -outputImagesFolder /media/nikita/HDD/test/new_test/img -outputAnnotationsFolder /media/nikita/HDD/test/new_test/txt
+    
+        /bin/python3 /home/nikita/Desktop/Mosaic_develop/start.py -t xVIEW -s 0 -e 100 
+        -imputImagesFolder /media/nikita/HDD/datasets/xView/train_images/train_images 
+        -inputAnnotationsFolder /media/nikita/HDD/datasets/xView/train_labels/xView_train.geojson 
+        -outputImagesFolder /media/nikita/HDD/test/new_test/img -outputAnnotationsFolder /media/nikita/HDD/test/new_test/txt
+
+    
     """
     Img_mosaic = MosaicController(args.imputImagesFolder, args.inputAnnotationsFolder, \
         args.outputImagesFolder, args.outputAnnotationsFolder, data_type)

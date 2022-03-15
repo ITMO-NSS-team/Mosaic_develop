@@ -107,10 +107,10 @@ def read_METU(images_path: str, json_path: str) -> list:
                     objects.append(object_bb)
                     classes.append(class_of_object)
                 
-        image_name = _search_filename_by_imageID(data, image)
-        if isfile(join(images_path, image_name)):
-            img = Image.open(join(images_path, image_name)).convert("RGB")
-            img_width, img_height = img.size
-            if _is_in_bounds(objects, img_width, img_height):
-                pair_list.append(DataPair(images_path, image_name, objects, classes))
+    image_name = _search_filename_by_imageID(data, image)
+    if isfile(join(images_path, image_name)):
+        img = Image.open(join(images_path, image_name)).convert("RGB")
+        img_width, img_height = img.size
+        if _is_in_bounds(objects, img_width, img_height):
+            pair_list.append(DataPair(images_path, image_name, objects, classes))
     return True, pair_list

@@ -57,6 +57,13 @@ class DataPair:
             for line in self.yolo_objects_list:
                 self.rec_objects_list.append(from_yolo_to_rec(line, self.img_width, 
                 self.img_height))
+        elif  type(objects[0][0]) is np.int64:
+            # If it's just a rectangle
+            self.rec_objects_list = objects.copy()
+            self.yolo_objects_list = []
+            for line in self.rec_objects_list:
+                self.yolo_objects_list.append(from_rec_to_yolo(line,
+                    self.img_width, self.img_height))
 
     def get_free_space_on_image(self, width: int, height: int) -> Tuple[bool, list]:
         """
@@ -74,8 +81,9 @@ class DataPair:
             out_list = get_space_on_empty_image(self.img_width, 
             self.img_height, width, height)
             if out_list:
-                return self.get_image().crop((out_list[0], out_list[1], 
-                out_list[2], out_list[3])), out_list
+                return self.get_image().crop((
+                     out_list[0], out_list[1], out_list[2], out_list[3])), \
+                      out_list
             else:
                 return False, []
         else:
@@ -106,7 +114,7 @@ class DataPair:
                                                 self.rec_objects_list[i][2],
                                                 self.rec_objects_list[i][3]]):
                         bbox = rectangle_correction(bbox, 
-                                                self.rec_objects_list[i])
+                                                self.rec_objects_list[i], self.img_width, self.img_height).copy()
                 areas.append(bbox)
 
             max_number: int = 0
