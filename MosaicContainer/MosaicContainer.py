@@ -4,10 +4,11 @@ from os.path import join
 from PIL import Image
 import logging
 
-import cv2
+from utils.coord_utils import first_coord_change, second_coord_change
 from utils.rectangles_checks import point_intersection, rectangles_intersection, rectangle_correction, is_not_degenerate
 from utils.images_utils import get_space_on_empty_image
 from utils.convertors import from_rec_to_yolo
+
 from Constants.mosaic_settings import DELTA_Y, MAX_MULTIPLIER, MIN_MULTIPLIER, DELTA_X, DELTA_Y
 
 class MosaicContainer:
@@ -93,22 +94,6 @@ class MosaicContainer:
         :param delta_w - width of area
         :param delta_h - height of area
         """
-        def first_coord_change(coord: int, delta: int) -> int:
-            if coord - delta >= 0:
-                out_coord = coord - randint(0, delta)
-            else:
-                out_coord = coord - randint(0, coord)
-            return out_coord
-
-        def second_coord_change(coord: int, delta: int, size: int) -> int:
-            if coord + delta <= size - 1:
-                out_coord = coord + randint(0, delta)
-            else:
-                if size - coord <= 0:
-                    out_coord = coord
-                else:
-                    out_coord = coord + randint(0, size - coord)
-            return out_coord
         for bbox in self.rec_objects_list:
             out_x1 = first_coord_change(bbox[0], delta_w)
             out_y1 = first_coord_change(bbox[1], delta_h)

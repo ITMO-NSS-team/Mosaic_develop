@@ -2,10 +2,9 @@ import json
 import numpy as np
 from tqdm import tqdm
 from os.path import join, isfile
-import sys
-sys.path.append ("/home/balin/Desktop/Mosaic_develop")
-from DataPair.DataPair import DataPair
 from PIL import Image
+
+from DataPair.DataPair import DataPair
 
 def _is_more_than_zero(box: list) -> bool:
     """

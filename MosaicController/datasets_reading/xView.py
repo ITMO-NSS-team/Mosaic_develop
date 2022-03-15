@@ -1,10 +1,11 @@
 import json
-from re import T
 import numpy as np
 from tqdm import tqdm
 from os.path import join, isfile
-from DataPair.DataPair import DataPair
 from PIL import Image
+
+from DataPair.DataPair import DataPair
+
 
 def _is_more_than_zero(box: list) -> bool:
     """

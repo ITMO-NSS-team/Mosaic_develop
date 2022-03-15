@@ -1,7 +1,6 @@
 from tqdm import tqdm
 import os
-from os.path import splitext
-from os.path import join
+from os.path import splitext, join
 import numpy as np
 
 from DataPair.DataPair import DataPair
