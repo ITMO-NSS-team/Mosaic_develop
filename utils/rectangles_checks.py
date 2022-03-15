@@ -143,7 +143,6 @@ def rectangle_correction_with_objects(bbox: list, intersected_rectangle: list) -
         bbox[3] = intersected_rectangle[3]
     return bbox
 
-
 def is_not_degenerate(box: list) -> bool:
     """
     Method-checker for boxes. Checks if all elements in boxes are x1 < x2 and y1 < y2(not degenerate)

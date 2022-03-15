@@ -5,6 +5,7 @@ import numpy as np
 
 from DataPair.DataPair import DataPair
 from Constants.datatype_constants import IMG_EXT, TXT_EXT
+from Constants.start_settings import LOAD_COLOUR
 
 def create_obj_list(annotation_folder: str, annotation_filde: str) -> list:
         """
@@ -39,7 +40,7 @@ def read_yolov4(images_path: str, annotations_path: str) -> list:
     if len(image_list) == len(txt_list):
         pair_count = len(txt_list)
         is_all_files_paired = True
-        for i in tqdm(range(pair_count), colour="red"):
+        for i in tqdm(range(pair_count), colour=LOAD_COLOUR):
             img_pathname, img_extension = splitext(image_list[i])
             txt_pathname, txt_extension = splitext(txt_list[i])
             if not (img_pathname == txt_pathname and img_extension in IMG_EXT and txt_extension in TXT_EXT):
@@ -48,7 +49,7 @@ def read_yolov4(images_path: str, annotations_path: str) -> list:
         if is_all_files_paired:
             print(f"All images have a respective pair of text files!")
             print(f"Pair count is {pair_count}")
-            for i in tqdm(range(pair_count), colour="blue"):
+            for i in tqdm(range(pair_count), colour=LOAD_COLOUR):
                 objects, classes = create_obj_list(annotations_path, txt_list[i])
                 pair_list.append(DataPair(images_path, image_list[i],
                                                 objects, classes))

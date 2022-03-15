@@ -5,6 +5,7 @@ from os.path import join, isfile
 from PIL import Image
 
 from DataPair.DataPair import DataPair
+from Constants.start_settings import LOAD_COLOUR
 
 def _is_more_than_zero(box: list) -> bool:
     """
@@ -72,7 +73,7 @@ def read_METU(images_path: str, json_path: str) -> list:
     objects = []
     image = ""
     classes = []
-    for i in tqdm(range(len(data['annotations']))):
+    for i in tqdm(range(len(data['annotations'])), colour=LOAD_COLOUR):
         if data['annotations'][i]['bbox'] != []:
             image_id = data['annotations'][i]['image_id']
             object_bb_1 = np.array([int(num) for num in data['annotations'][i]['bbox']])

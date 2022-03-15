@@ -1,4 +1,5 @@
 from random import randint
+from Constants.mosaic_settings import DIVIDER
 
 def first_coord_change(coord: int, delta: int) -> int:
     """
@@ -40,8 +41,8 @@ def first_coord_change_for_bb(coord: int, size: int):
     :param size - size of target box
     :return coord
     """
-    if coord - size // 2 > 0:
-        coord -= randint(0, size // 2)
+    if coord - size // DIVIDER > 0:
+        coord -= randint(0, size // DIVIDER)
     else:
         coord -= randint(0, coord)
     return coord
@@ -55,8 +56,8 @@ def second_coord_change_for_bb(coord: int, size: int, image_size: int):
     :param image_size - size of image in this demention
     :return coord
     """
-    if coord + size // 2 < image_size:
-        coord += randint(0, size // 2)
+    if coord + size // DIVIDER < image_size:
+        coord += randint(0, size // DIVIDER)
     else:
         if image_size - coord > 0:
             coord += randint(0, image_size - coord)

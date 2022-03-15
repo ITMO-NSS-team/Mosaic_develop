@@ -11,6 +11,7 @@ from MosaicController.datasets_reading.METU import read_METU
 from Constants.datatype_constants import YOLO, XVIEW, METU
 from Constants.mosaic_settings import MAX_MULTIPLIER, MIN_MULTIPLIER, MAX_IMAGES, \
     IMAGES_FORMAT, ANNOTATIONS_FORMAT
+from Constants.start_settings import WORK_COLOUR
 
 
 class MosaicController:
@@ -72,7 +73,7 @@ class MosaicController:
         :return list - pairs list
         
         """
-        pic_number: int = randint(2, self.max_images_in_mosaic)
+        pic_number: int = randint(1, self.max_images_in_mosaic)
         rand_pairs_list: list = []
         for i in range(pic_number):
             stop: bool = False
@@ -120,7 +121,7 @@ class MosaicController:
     def print_params(self) -> None:
         """
         Print parameters of class
-        
+        Can be use for debugging
         print(f"--------------------------------------------------")
         print("Parameters of class:")
         print(f"Minimum object multiplier = {self.min_object_multiplier}")
@@ -151,7 +152,7 @@ class MosaicController:
 
     def make_mosaic(self):
         """
-        Make several mosaics from class data 
+        Make several mosaics from class data.
         """
         self.print_params()
         if self.end_number > self.start_number:
@@ -162,7 +163,7 @@ class MosaicController:
                 print(f"Will be creating {self.end_number-self.start_number} mosaics")
                 print(f"From start number {self.start_number} to end number {self.end_number}")
                 print("Mosaic creation started...")
-                for counter in tqdm(range(self.start_number, self.end_number), colour="green"):
+                for counter in tqdm(range(self.start_number, self.end_number), colour=WORK_COLOUR):
                     have_to_do_mosaic = True
                     while(have_to_do_mosaic):
                         rand_pair_numbers = self.get_several_rand_pairs()

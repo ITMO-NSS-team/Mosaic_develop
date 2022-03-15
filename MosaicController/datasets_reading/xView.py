@@ -5,6 +5,7 @@ from os.path import join, isfile
 from PIL import Image
 
 from DataPair.DataPair import DataPair
+from Constants.start_settings import LOAD_COLOUR
 
 
 def _is_more_than_zero(box: list) -> bool:
@@ -51,7 +52,7 @@ def read_xView(images_path: str, json_path: str) -> list:
     objects = []
     image = ""
     classes = []
-    for i in tqdm(range(len(data['features']))):
+    for i in tqdm(range(len(data['features'])), colour=LOAD_COLOUR):
         if data['features'][i]['properties']['bounds_imcoords'] != []:
             image_name = data['features'][i]['properties']['image_id']
             object_bb = np.array([int(num) for num in data['features'][i]['properties']['bounds_imcoords'].split(",")])

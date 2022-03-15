@@ -1,4 +1,5 @@
 from random import randint
+from Constants.mosaic_settings import AREA_SIZE
 
 def get_space_on_empty_image(img_width: int, img_height: int, 
                             width: int, height: int) -> list:
@@ -39,11 +40,6 @@ def get_space_on_empty_image(img_width: int, img_height: int) -> list:
 
     :return out_list - coordinates of image part
     """
-    def area_check(bbox: list, width: int, height: int):
-        image_area = width * height
-        part_area = (bbox[3] - bbox[1]) * (bbox[2] - bbox[0])
-        return part_area > image_area * 0.3
-    
     bbox = [0, 0, 0, 0]
     while not area_check(bbox, img_width, img_height):
         bbox[0] = randint(0, int(img_width/2))
@@ -51,3 +47,11 @@ def get_space_on_empty_image(img_width: int, img_height: int) -> list:
         bbox[1] = randint(0, int(img_height/2))
         bbox[3] = randint(bbox[1], int(img_height))
     return bbox
+
+def area_check(bbox: list, width: int, height: int):
+    """
+    Check area for size relatively to image.
+    """
+    image_area = width * height
+    part_area = (bbox[3] - bbox[1]) * (bbox[2] - bbox[0])
+    return part_area > image_area * AREA_SIZE

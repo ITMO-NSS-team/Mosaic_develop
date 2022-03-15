@@ -9,7 +9,8 @@ from utils.rectangles_checks import point_intersection, rectangles_intersection,
 from utils.images_utils import get_space_on_empty_image
 from utils.convertors import from_rec_to_yolo
 
-from Constants.mosaic_settings import DELTA_Y, MAX_MULTIPLIER, MIN_MULTIPLIER, DELTA_X, DELTA_Y
+from Constants.mosaic_settings import DELTA_Y, MAX_MULTIPLIER, MIN_MULTIPLIER, DELTA_X, DELTA_Y, \
+    ATTEMPTS_FOR_GET_EMPTY_PART_OF_IMAGE, ATTEMPTS_FOR_GET_IMAGE_WITH_OBJECT, IMAGE_FORMAT, ANNOTATIONS_FORMAT
 
 class MosaicContainer:
     """
@@ -53,7 +54,6 @@ class MosaicContainer:
         self.pair_list = pairs.copy()
         self.yolo_objects_list = pairs[0].yolo_objects_list.copy()
         self.rec_objects_list = pairs[0].rec_objects_list.copy()
-
         # list for small areas aroun objects to improve quality 
         self.rec_rec_list = []
         # list of inserted areas
@@ -108,8 +108,8 @@ class MosaicContainer:
         """
         if self.objects_number != 0:
             if self.data_pairs_number != 0:
-                self.main_image.save(join(self.image_folder, self.filename + ".jpg"))
-                with open(join(self.txt_folder, self.filename + ".txt"), 'w') as f:
+                self.main_image.save(join(self.image_folder, self.filename + IMAGE_FORMAT))
+                with open(join(self.txt_folder, self.filename + ANNOTATIONS_FORMAT), 'w') as f:
                     for i in range(len(self.yolo_objects_list)):
                         f.write(f"{self.mosaic_classes[i]} ")
                         for numb in self.yolo_objects_list[i]:
@@ -139,7 +139,7 @@ class MosaicContainer:
                 areas = []
                 x: int = 0
                 y: int = 0
-                for n in range(15):
+                for n in range(ATTEMPTS_FOR_GET_EMPTY_PART_OF_IMAGE):
                     stop: bool = False
                     while not stop:
                         x = randint(0, self.img_width - 1)
@@ -196,7 +196,7 @@ class MosaicContainer:
                 rectangle = self.areas_list.pop(i)
                 width: int = rectangle[2] - rectangle[0]
                 height: int = rectangle[3] - rectangle[1]
-                for n in range(20):
+                for n in range(ATTEMPTS_FOR_GET_IMAGE_WITH_OBJECT):
                     number = randint(1, len(self.pair_list)-1)
                     img, piece_of_objects_list, _, classes = self.pair_list[number].get_image_piece_with_object(width, height,
                                                                                                         self.min_object_multiplier,
