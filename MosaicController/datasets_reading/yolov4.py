@@ -4,9 +4,7 @@ from os.path import splitext, join
 import numpy as np
 
 from DataPair.DataPair import DataPair
-
-img_ext = [".jpg", ".png", ".JPG", ".PNG"]
-txt_ext = [".txt", ".TXT"]
+from Constants.datatype_constants import IMG_EXT, TXT_EXT
 
 def create_obj_list(annotation_folder: str, annotation_filde: str) -> list:
         """
@@ -44,7 +42,7 @@ def read_yolov4(images_path: str, annotations_path: str) -> list:
         for i in tqdm(range(pair_count), colour="red"):
             img_pathname, img_extension = splitext(image_list[i])
             txt_pathname, txt_extension = splitext(txt_list[i])
-            if not (img_pathname == txt_pathname and img_extension in img_ext and txt_extension in txt_ext):
+            if not (img_pathname == txt_pathname and img_extension in IMG_EXT and txt_extension in TXT_EXT):
                 print(f"ERROR! Pair {i}: img {image_list[i]} - txt {txt_list[i]}")
                 is_all_files_paired = False
         if is_all_files_paired:
