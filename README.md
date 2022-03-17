@@ -1,7 +1,8 @@
 # Mosaic generator(augmenter)
 ### {WORK IN PROGRESS}
 
-++This project is lossles mosaic generator. All craftsdwarfship is of highest quality.++
+☼This project is lossles mosaic generator. All craftsdwarfship is of highest quality.☼
+
 It's provide one single function - generate mosaic data from your dataset.
 
 ### Purpose
